@@ -104,9 +104,9 @@ export function encode(pos, inputs) {
 // Polar coordinate to cartesian coordinate helper
 function pol2car ([theta, phi]) {
   let radius = 1; // unit circle
-  let x = radius * Math.cos(phi) * Math.sin(theta);
-  let y = radius * Math.sin(phi) * Math.sin(theta);
-  let z = radius * Math.cos(theta);
+  let x = radius * Math.cos(theta * Math.PI / 180);
+  let y = radius * Math.sin(theta * Math.PI / 180);
+  let z = radius * Math.sin(phi * Math.PI / 180);
 
   return [x, y, z];
 }
@@ -157,6 +157,8 @@ export async function transform(inputFile, position, effect, outputPath) {
     let wet = effect(vMicSignal);
     let dry = vMicSignal;
     let d = distance(pol2car(pos[i]), pol2car([position.azimuth, position.elevation]));
+
+    // TODO: Could map smoothly here between 0, 1
     let mix = d > position.influence ? 0 : 1;
 
     return el.select(mix, wet, dry);

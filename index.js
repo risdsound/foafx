@@ -3,6 +3,7 @@ import { program } from 'commander';
 import { transform } from './transform.js';
 import { bitcrush } from './effects/bitcrush.js';
 import { distortion } from './effects/distortion.js';
+import { delay  } from './effects/delay.js';
 
 
 const defaults = {
@@ -21,6 +22,15 @@ const defaults = {
       azimuth: 0,
       elevation: 0,
       influence: 0.5,
+    },
+  },
+  delay: {
+    delayTime: 500,
+    feedback: 0.8,
+    position: {
+      azimuth: 90,
+      elevation: 0,
+      influence: 0.2,
     },
   },
 };
@@ -67,6 +77,20 @@ program
     const { position, ...props } = config.distortion;
 
     await transform(inputFile, position, (x) => distortion(props, x), outputPath);
+
+    console.log(`Writing ${outputPath}`);
+  });
+
+program
+  .command('delay <inputFile> <outputPath>')
+  .description('Run the delay spatial audio effect over the input file')
+  .action(async (inputFile, outputPath) => {
+    console.log(`Processing ${inputFile}...`);
+
+    const config = loadConfig(program.opts());
+    const { position, ...props } = config.delay;
+
+    await transform(inputFile, position, (x) => delay(props, x), outputPath);
 
     console.log(`Writing ${outputPath}`);
   });
