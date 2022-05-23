@@ -101,6 +101,21 @@ export function encode(pos, inputs) {
   }, [0, 0, 0, 0]);
 }
 
+// Polar coordinate to cartesian coordinate helper
+function pol2car ([theta, phi]) {
+  let radius = 1; // unit circle
+  let x = radius * Math.cos(phi) * Math.sin(theta);
+  let y = radius * Math.sin(phi) * Math.sin(theta);
+  let z = radius * Math.cos(theta);
+
+  return [x, y, z];
+}
+
+// Euclidean distance helper
+function distance([x1, y1, z1], [x2, y2, z2]) {
+  return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1));
+}
+
 // Our main transform function.
 //
 // Takes an input file, an effect function, and a desired output
@@ -109,7 +124,14 @@ export function encode(pos, inputs) {
 // The effect function is an Elementary function which receives
 // an input channel, performs some process over it, and returns
 // the output. This function should operate over a single channel.
-export async function transform(inputFile, effect, outputPath) {
+//
+// The position is an object specifying azimuth, elevation, and influence
+// relating to the effect. The effect is 100% wet at the specified position
+// in the virtual sphere, and 100% dry outside of the sphere of influence around
+// that point. The sphere of influence is specified by the influence property
+// which defines the radius of the sphere. The virtual sphere in which the sphere
+// of influence sits is defined as a unit sphere.
+export async function transform(inputFile, position, effect, outputPath) {
   let core = new OfflineRenderer();
   let inputData = decodeAudioData(inputFile);
   let outputWav = new wavefile.WaveFile();
@@ -131,8 +153,13 @@ export async function transform(inputFile, effect, outputPath) {
   const pos = [ [0, 0], [90, 0], [180, 0], [270, 0], [0, 90], [0, -90] ];
   const inTaps = inps.map((x, i) => el.in({channel: i}));
 
-  core.render(...encode(pos, decode(pos, ...inTaps).map((vMicSignal) => {
-    return effect(vMicSignal);
+  core.render(...encode(pos, decode(pos, ...inTaps).map((vMicSignal, i) => {
+    let wet = effect(vMicSignal);
+    let dry = vMicSignal;
+    let d = distance(pol2car(pos[i]), pol2car([position.azimuth, position.elevation]));
+    let mix = d > position.influence ? 0 : 1;
+
+    return el.select(mix, wet, dry);
   })));
 
   // Pushing samples through the graph
