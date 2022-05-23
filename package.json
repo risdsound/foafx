@@ -1,0 +1,19 @@
+{
+  "name": "foafx",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@elemaudio/core": "^1.0.3",
+    "@elemaudio/offline-renderer": "^1.0.4",
+    "commander": "^9.2.0",
+    "spherical-harmonic-transform": "^0.1.1",
+    "wavefile": "^11.0.0"
+  }
+}
