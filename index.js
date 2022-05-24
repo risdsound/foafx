@@ -1,3 +1,5 @@
+#!/usr//bin/env node
+
 import { readFileSync } from 'fs';
 import { program } from 'commander';
 import { transform } from './transform.js';
