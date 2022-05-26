@@ -7,6 +7,7 @@ import { bitcrush } from './effects/bitcrush.js';
 import { distortion } from './effects/distortion.js';
 import { delay } from './effects/delay.js';
 import { flanger } from './effects/flanger.js';
+import { chorus } from './effects/chorus.js';
 
 
 const defaults = {
@@ -40,6 +41,15 @@ const defaults = {
     rate: 0.2,
     depth: 3.5,
     feedback: 0.4,
+    position: {
+      azimuth: -90,
+      elevation: 0,
+      influence: 0.5,
+    },
+  },
+  chorus: {
+    rate: 0.5,
+    depth: 40,
     position: {
       azimuth: -90,
       elevation: 0,
@@ -118,6 +128,20 @@ program
     const { position, ...props } = config.flanger;
 
     await transform(inputFile, position, (x) => flanger(props, x), outputPath);
+
+    console.log(`Writing ${outputPath}`);
+  });
+
+program
+  .command('chorus <inputFile> <outputPath>')
+  .description('Run the chorus spatial audio effect over the input file')
+  .action(async (inputFile, outputPath) => {
+    console.log(`Processing ${inputFile}...`);
+
+    const config = loadConfig(program.opts());
+    const { position, ...props } = config.chorus;
+
+    await transform(inputFile, position, (x) => chorus(props, x), outputPath);
 
     console.log(`Writing ${outputPath}`);
   });
