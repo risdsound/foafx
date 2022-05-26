@@ -5,7 +5,8 @@ import { program } from 'commander';
 import { transform } from './transform.js';
 import { bitcrush } from './effects/bitcrush.js';
 import { distortion } from './effects/distortion.js';
-import { delay  } from './effects/delay.js';
+import { delay } from './effects/delay.js';
+import { flanger } from './effects/flanger.js';
 
 
 const defaults = {
@@ -32,7 +33,17 @@ const defaults = {
     position: {
       azimuth: 90,
       elevation: 0,
-      influence: 0.2,
+      influence: 0.5,
+    },
+  },
+  flanger: {
+    rate: 0.2,
+    depth: 3.5,
+    feedback: 0.4,
+    position: {
+      azimuth: -90,
+      elevation: 0,
+      influence: 0.5,
     },
   },
 };
@@ -93,6 +104,20 @@ program
     const { position, ...props } = config.delay;
 
     await transform(inputFile, position, (x) => delay(props, x), outputPath);
+
+    console.log(`Writing ${outputPath}`);
+  });
+
+program
+  .command('flange <inputFile> <outputPath>')
+  .description('Run the flanger spatial audio effect over the input file')
+  .action(async (inputFile, outputPath) => {
+    console.log(`Processing ${inputFile}...`);
+
+    const config = loadConfig(program.opts());
+    const { position, ...props } = config.flanger;
+
+    await transform(inputFile, position, (x) => flanger(props, x), outputPath);
 
     console.log(`Writing ${outputPath}`);
   });
