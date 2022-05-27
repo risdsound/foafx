@@ -8,6 +8,7 @@ import { distortion } from './effects/distortion.js';
 import { delay } from './effects/delay.js';
 import { flanger } from './effects/flanger.js';
 import { chorus } from './effects/chorus.js';
+import { gain } from './effects/gain.js';
 
 
 const defaults = {
@@ -52,6 +53,14 @@ const defaults = {
     depth: 40,
     position: {
       azimuth: -90,
+      elevation: 0,
+      influence: 0.5,
+    },
+  },
+  gain: {
+    gainDecibels: 0.0,
+    position: {
+      azimuth: 0,
       elevation: 0,
       influence: 0.5,
     },
@@ -142,6 +151,20 @@ program
     const { position, ...props } = config.chorus;
 
     await transform(inputFile, position, (x) => chorus(props, x), outputPath);
+
+    console.log(`Writing ${outputPath}`);
+  });
+
+program
+  .command('gain <inputFile> <outputPath>')
+  .description('Run the gain spatial audio effect over the input file')
+  .action(async (inputFile, outputPath) => {
+    console.log(`Processing ${inputFile}...`);
+
+    const config = loadConfig(program.opts());
+    const { position, ...props } = config.gain;
+
+    await transform(inputFile, position, (x) => gain(props, x), outputPath);
 
     console.log(`Writing ${outputPath}`);
   });
