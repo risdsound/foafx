@@ -29,7 +29,7 @@ export function decodeAudioData(path) {
 // Order, azim, and elev are all expected to be primitive numbers. Azim
 // and elev are in degrees, not radians. The return value is an array of
 // elementary nodes of length (order + 1)^2.
-export function ambipan(order, azim, elev, xn) {
+export function ambipan(normType, order, azim, elev, xn) {
   let gains = jshlib.computeRealSH(order, [
     [azim * Math.PI / 180, elev * Math.PI / 180],
   ]);
@@ -39,9 +39,9 @@ export function ambipan(order, azim, elev, xn) {
 
     // By default, the spherical harmonic transform library here yields coefficients
     // normalized in N3D. If the user asking for SN3D we convert here.
-    // if (norm === "sn3d") {
-    //   gain = gain / Math.sqrt(2 * i + 1);
-    // }
+    if (normType === "sn3d") {
+      gain = gain / Math.sqrt(2 * i + 1);
+    }
 
     return el.mul(gain, xn);
   });
@@ -57,24 +57,26 @@ export function zip(a, b) {
 
 // Decode from First Order Ambisonics to a series of virtual mic signals
 // using a simple SAD decoder.
-export function decode(pos, w, y, z, x) {
+export function decode(normType, pos, w, y, z, x) {
   // Map to radians
   const posRad = pos.map(([a, e]) => [a * Math.PI / 180, e * Math.PI / 180]);
 
-  // Decoding...
-  //
-  // This works for N3D inputs, we need to scale the first-order components by sqrt(3).
-  // If our input is in SN3D we need to add a second sqrt(3) factor here.
+  // Decoding:
   //
   // P_n = W + sqrt(3) * (X * cos(theta_n) * cos(phi_n) + Y * sin(theta_n) * cos(phi_n) + Z * sin(phi_n))
+  //
+  // For N3D input normalization, we need to scale the first-order components here
+  // by sqrt(3). For SN3D input normalization, we need an additional sqrt(3) factor.
+  const normFactor = (normType === "sn3d") ? Math.sqrt(3) * Math.sqrt(3) : Math.sqrt(3);
+
   return posRad.map(([azim, elev]) => (
     el.mul(
       1 / posRad.length,
       el.add(
         w,
-        el.mul(Math.sqrt(3), x, Math.cos(azim), Math.cos(elev)),
-        el.mul(Math.sqrt(3), y, Math.sin(azim), Math.cos(elev)),
-        el.mul(Math.sqrt(3), z, Math.sin(elev)),
+        el.mul(normFactor, x, Math.cos(azim), Math.cos(elev)),
+        el.mul(normFactor, y, Math.sin(azim), Math.cos(elev)),
+        el.mul(normFactor, z, Math.sin(elev)),
       ),
     )
   ));
@@ -83,9 +85,9 @@ export function decode(pos, w, y, z, x) {
 // Encodes a set of processed virtual mic signals back into FOA B-Format
 // by setting each signal to its appropriate place on the sphere and
 // summing the resulting W, Y, Z, X channels.
-export function encode(pos, inputs) {
+export function encode(normType, pos, inputs) {
   const bSignals = zip(pos, inputs).map(([[azim, elev], signal]) => {
-    return ambipan(1, azim, elev, signal);
+    return ambipan(normType, 1, azim, elev, signal);
   });
 
   return bSignals.reduce((acc, next) => {
@@ -131,7 +133,7 @@ function distance([x1, y1, z1], [x2, y2, z2]) {
 // that point. The sphere of influence is specified by the influence property
 // which defines the radius of the sphere. The virtual sphere in which the sphere
 // of influence sits is defined as a unit sphere.
-export async function transform(inputFile, position, effect, outputPath) {
+export async function transform(inputFile, normType, position, effect, outputPath) {
   let core = new OfflineRenderer();
   let inputData = decodeAudioData(inputFile);
   let outputWav = new wavefile.WaveFile();
@@ -153,7 +155,7 @@ export async function transform(inputFile, position, effect, outputPath) {
   const pos = [ [0, 0], [90, 0], [180, 0], [270, 0], [0, 90], [0, -90] ];
   const inTaps = inps.map((x, i) => el.in({channel: i}));
 
-  core.render(...encode(pos, decode(pos, ...inTaps).map((vMicSignal, i) => {
+  core.render(...encode(normType, pos, decode(normType, pos, ...inTaps).map((vMicSignal, i) => {
     let wet = effect(vMicSignal);
     let dry = vMicSignal;
     let d = distance(pol2car(pos[i]), pol2car([position.azimuth, position.elevation]));

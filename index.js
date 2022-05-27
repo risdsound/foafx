@@ -13,7 +13,7 @@ import { gain } from './effects/gain.js';
 
 const defaults = {
   bitcrush: {
-    bitDepth: 2,
+    bitDepth: 5,
     position: {
       azimuth: 0,
       elevation: 0,
@@ -82,8 +82,24 @@ function loadConfig(programOpts) {
   return defaults;
 }
 
+function loadNormalizationType(programOpts) {
+  if (programOpts.hasOwnProperty('norm') && typeof programOpts.norm === 'string') {
+    switch (programOpts.norm.toLowerCase()) {
+      case 'n3d':
+        return 'n3d';
+      case 'sn3d':
+        return 'sn3d';
+      default:
+        break;
+    }
+  }
+
+  return 'sn3d';
+}
+
 program
-  .option('-c, --config <path>');
+  .option('-n, --norm <type>', 'Either "n3d" or "sn3d" matching the input file encoding')
+  .option('-c, --config <path>', 'Load a configuration file to override the default parameter settings');
 
 program
   .command('bitcrush <inputFile> <outputPath>')
@@ -92,9 +108,10 @@ program
     console.log(`Processing ${inputFile}...`);
 
     const config = loadConfig(program.opts());
+    const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.bitcrush;
 
-    await transform(inputFile, position, (x) => bitcrush(props, x), outputPath);
+    await transform(inputFile, normType, position, (x) => bitcrush(props, x), outputPath);
 
     console.log(`Writing ${outputPath}`);
   });
@@ -106,9 +123,10 @@ program
     console.log(`Processing ${inputFile}...`);
 
     const config = loadConfig(program.opts());
+    const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.distortion;
 
-    await transform(inputFile, position, (x) => distortion(props, x), outputPath);
+    await transform(inputFile, normType, position, (x) => distortion(props, x), outputPath);
 
     console.log(`Writing ${outputPath}`);
   });
@@ -120,9 +138,10 @@ program
     console.log(`Processing ${inputFile}...`);
 
     const config = loadConfig(program.opts());
+    const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.delay;
 
-    await transform(inputFile, position, (x) => delay(props, x), outputPath);
+    await transform(inputFile, normType, position, (x) => delay(props, x), outputPath);
 
     console.log(`Writing ${outputPath}`);
   });
@@ -134,9 +153,10 @@ program
     console.log(`Processing ${inputFile}...`);
 
     const config = loadConfig(program.opts());
+    const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.flanger;
 
-    await transform(inputFile, position, (x) => flanger(props, x), outputPath);
+    await transform(inputFile, normType, position, (x) => flanger(props, x), outputPath);
 
     console.log(`Writing ${outputPath}`);
   });
@@ -148,9 +168,10 @@ program
     console.log(`Processing ${inputFile}...`);
 
     const config = loadConfig(program.opts());
+    const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.chorus;
 
-    await transform(inputFile, position, (x) => chorus(props, x), outputPath);
+    await transform(inputFile, normType, position, (x) => chorus(props, x), outputPath);
 
     console.log(`Writing ${outputPath}`);
   });
@@ -162,9 +183,10 @@ program
     console.log(`Processing ${inputFile}...`);
 
     const config = loadConfig(program.opts());
+    const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.gain;
 
-    await transform(inputFile, position, (x) => gain(props, x), outputPath);
+    await transform(inputFile, normType, position, (x) => gain(props, x), outputPath);
 
     console.log(`Writing ${outputPath}`);
   });
