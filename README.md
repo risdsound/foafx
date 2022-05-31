@@ -56,7 +56,7 @@ Commands:
     * `feedback` – Default 0.8, Min 0, Max 0.999
 * Flanger
     * `rate` – Default 0.2Hz, Min 0, Max 20,000
-    * `depth` – Default 0.8, Min 0, Max 1
+    * `depth` – Default 0.8, Min 1, Max 20
     * `feedback` – Default 0.8, Min -0.999, Max 0.999
 * Chorus
     * `rate` – Default 0.5Hz, Min 0, Max 20,000

@@ -1,5 +1,7 @@
 #!/usr//bin/env node
 
+import invariant from 'invariant';
+
 import { readFileSync } from 'fs';
 import { program } from 'commander';
 import { transform } from './transform.js';
@@ -71,10 +73,10 @@ function loadConfig(programOpts) {
   try {
     if (programOpts.hasOwnProperty('config') && typeof programOpts.config === 'string') {
       let config = JSON.parse(readFileSync(programOpts.config, 'utf-8'));
-      return Object.assign({}, defaults, config.effects);
+      return Object.assign({}, defaults, config);
     }
   } catch(e) {
-    console.error('Failed to load config:', e);
+    console.error('Failed to load config:', e.message);
     console.log();
     console.log('Falling back to defaults...');
   }
@@ -97,8 +99,15 @@ function loadNormalizationType(programOpts) {
   return 'sn3d';
 }
 
+function checkPosition(pos) {
+  invariant(typeof pos === 'object', 'Position object must be specified in the config file.');
+  invariant(typeof pos.azimuth === 'number', 'Position object must specify an azimuth value in degrees.');
+  invariant(typeof pos.elevation === 'number', 'Position object must specify an elevation value in degrees.');
+  invariant(typeof pos.influence === 'number', 'Position object must specify an influence value in degrees.');
+}
+
 program
-  .option('-n, --norm <type>', 'Either "n3d" or "sn3d" matching the input file encoding')
+  .option('-n, --norm <type>', 'Either "n3d" or "sn3d" (default "sn3d") matching the input file encoding')
   .option('-c, --config <path>', 'Load a configuration file to override the default parameter settings');
 
 program
@@ -111,7 +120,13 @@ program
     const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.bitcrush;
 
-    await transform(inputFile, normType, position, (x) => bitcrush(props, x), outputPath);
+    try {
+      checkPosition(position);
+      await transform(inputFile, normType, position, (x) => bitcrush(props, x), outputPath);
+    } catch (e) {
+      console.error('Error:', e.message);
+      process.exit(1);
+    }
 
     console.log(`Writing ${outputPath}`);
   });
@@ -126,7 +141,13 @@ program
     const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.distortion;
 
-    await transform(inputFile, normType, position, (x) => distortion(props, x), outputPath);
+    try {
+      checkPosition(position);
+      await transform(inputFile, normType, position, (x) => distortion(props, x), outputPath);
+    } catch (e) {
+      console.error('Error:', e.message);
+      process.exit(1);
+    }
 
     console.log(`Writing ${outputPath}`);
   });
@@ -141,7 +162,13 @@ program
     const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.delay;
 
-    await transform(inputFile, normType, position, (x) => delay(props, x), outputPath);
+    try {
+      checkPosition(position);
+      await transform(inputFile, normType, position, (x) => delay(props, x), outputPath);
+    } catch (e) {
+      console.error('Error:', e.message);
+      process.exit(1);
+    }
 
     console.log(`Writing ${outputPath}`);
   });
@@ -156,7 +183,13 @@ program
     const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.flanger;
 
-    await transform(inputFile, normType, position, (x) => flanger(props, x), outputPath);
+    try {
+      checkPosition(position);
+      await transform(inputFile, normType, position, (x) => flanger(props, x), outputPath);
+    } catch (e) {
+      console.error('Error:', e.message);
+      process.exit(1);
+    }
 
     console.log(`Writing ${outputPath}`);
   });
@@ -171,7 +204,13 @@ program
     const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.chorus;
 
-    await transform(inputFile, normType, position, (x) => chorus(props, x), outputPath);
+    try {
+      checkPosition(position);
+      await transform(inputFile, normType, position, (x) => chorus(props, x), outputPath);
+    } catch (e) {
+      console.error('Error:', e.message);
+      process.exit(1);
+    }
 
     console.log(`Writing ${outputPath}`);
   });
@@ -186,7 +225,13 @@ program
     const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.gain;
 
-    await transform(inputFile, normType, position, (x) => gain(props, x), outputPath);
+    try {
+      checkPosition(position);
+      await transform(inputFile, normType, position, (x) => gain(props, x), outputPath);
+    } catch (e) {
+      console.error(e);
+      process.exit(1);
+    }
 
     console.log(`Writing ${outputPath}`);
   });
