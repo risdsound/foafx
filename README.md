@@ -136,10 +136,10 @@ foafx bitcrush -n n3d -c config.json input.wav output.wav
 
 ## Credits / project team
 
-RISD Spatial Audio Studio
+RISD Spatial Audio Studio\
 Shawn Greenlee, Caleb Shafer, Femi Shonuga-Fleming, Mark Araujo
 
-Elementary Audio, LLC
+Elementary Audio, LLC\
 Nick Thompson
 
 This project is supported in part by an award from the [National Endowment for the Arts](https://www.arts.gov/) and funding from Rhode Island School of Design.
