@@ -160,10 +160,19 @@ export async function transform(inputFile, normType, position, effect, outputPat
     let dry = vMicSignal;
     let d = distance(pol2car(pos[i]), pol2car([position.azimuth, position.elevation]));
 
-    // TODO: Could map smoothly here between 0, 1
-    let mix = d > position.influence ? 0 : 1;
+    let influence = Math.max(0, Math.min(1, position.influence));
+    let maxScaledInfluence = Math.sqrt(2) * 2;
+    let minScaledInfluence = 0.8;
+    let scaledInfluence = minScaledInfluence + influence * (maxScaledInfluence - minScaledInfluence);
 
-    return el.select(mix, wet, dry);
+    // If this particular mic signal is within the influence region, we mix according
+    // to distance between the mic signal and the effect position
+    if (d < scaledInfluence) {
+      let mix = 1.0 - 0.95 * (d / scaledInfluence);
+      return el.select(mix, wet, dry);
+    }
+
+    return dry;
   })));
 
   // Pushing samples through the graph

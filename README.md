@@ -46,6 +46,14 @@ Commands:
 
 ## Parameter ranges
 
+### Position
+
+* `azimuth`, in degrees
+* `elevation`, in degrees
+* `influence` in the range [0, 1]
+
+### Effects
+
 * Bitcrush
     * `bitDepth` – Default 5, Min 1, Max 16
 * Distortion
