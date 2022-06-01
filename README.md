@@ -6,15 +6,11 @@ As its input, **foafx** expects a B-format, 4-channel first order ambisonic enco
 
 In order to apply a chosen effect, **foafx** decodes the B-format file using a simple Sampling Ambisonic Decoder (SAD) into an octahedral arrangement with six vertices that represent virtual microphone positions.  Then, the effect is applied with the specified parameters including its spatial position (azimuth and elevation).  After effect processing, the six signals are encoded back to B-format, panned to the matching octahedral positions of the decoder, and rendered to an output file.  The result is an ambisonic wet/dry effect mix with wet focussed in a specific area of the sound field.
 
-(graphic here)
-
-Because **foafx** impacts a region of sound field, based on azimuth, elevation, and influence parameters, multiple processing passes may be required to achieve a fully encompassing effect, which with varied parameters can yield compelling results that interact with the spatial information embedded in the source file.  With this in mind, there are six regions of consequence based on the octahedral decoder. In azimuth/elevation pairs (in degrees) these are:
+Because **foafx** impacts a region of the sound field, based on azimuth, elevation, and influence parameters, multiple processing passes may be required to achieve a fully encompassing effect, which with varied parameters can yield compelling results that interact with the spatial aspects of the source file.  With this in mind, there are six regions of consequence based on the octahedral decoder. In azimuth/elevation pairs (in degrees) these are:
 
 [0, 0], [90, 0], [180, 0], [270, 0], [0, 90], [0, -90]
 
 FRONT, LEFT, BACK, RIGHT, UP, DOWN
-
-(graphic here)
 
 By running an effect (or different effects) consecutively at each of these or equidistant coordinates, the entire sound field will be altered.
 
