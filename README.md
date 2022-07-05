@@ -140,17 +140,17 @@ foafx bitcrush -n n3d -c config.json input.wav output.wav
 
 ## Credits 
 
-Nick Thompson, Elementary Audio, LLC\
+Nick Thompson, Elementary Audio, LLC
 
-Studio for Research in Sound and Technology, Rhode Island School of Design\
-* Shawn Greenlee, Faculty Lead\
-* Mark Araujo, Research Assisant\
-* Caleb Shafer, Research Assisant\
-* Femi Shonuga-Fleming, Research Assisant\
+Studio for Research in Sound and Technology, Rhode Island School of Design
+* Shawn Greenlee, Faculty Lead
+* Mark Araujo, Research Assisant
+* Caleb Shafer, Research Assisant
+* Femi Shonuga-Fleming, Research Assisant
 
 This project is supported in part by an award from the [National Endowment for the Arts](https://www.arts.gov/). To find out more about how National Endowment for the Arts grants impact individuals and communities, visit [www.arts.gov](https://www.arts.gov/).
 
-![NEA logo](https://www.arts.gov/sites/default/files/2018-Square-Logo-with-url.png)
+![NEA logo](https://www.arts.gov/sites/default/files/2018-Square-Logo-with-url.png =250x)
 
 ## License
 
