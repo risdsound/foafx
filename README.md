@@ -150,7 +150,8 @@ Studio for Research in Sound and Technology, Rhode Island School of Design
 
 This project is supported in part by an award from the [National Endowment for the Arts](https://www.arts.gov/). To find out more about how National Endowment for the Arts grants impact individuals and communities, visit [www.arts.gov](https://www.arts.gov/).
 
-![NEA logo](https://www.arts.gov/sites/default/files/2018-Square-Logo-with-url.png [width=200px)
+<img src="https://www.arts.gov/sites/default/files/2018-Square-Logo-with-url.png" width="250">
+
 
 ## License
 
