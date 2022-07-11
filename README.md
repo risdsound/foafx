@@ -140,7 +140,7 @@ foafx bitcrush -n n3d -c config.json input.wav output.wav
 
 ## Credits 
 
-Developed at the Studio for Research in Sound and Technology (SRST), Rhode Island School of Design (RISD)
+Created at the Studio for Research in Sound and Technology (SRST), Rhode Island School of Design (RISD)
 
 Project team: 
 * Shawn Greenlee, Faculty Lead
