@@ -1,9 +1,8 @@
 import wavefile from 'wavefile';
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync } from 'fs';
 
 import * as jshlib from 'spherical-harmonic-transform';
 
-import OfflineRenderer from '@elemaudio/offline-renderer';
 import { el } from '@elemaudio/core';
 
 
@@ -118,44 +117,10 @@ function distance([x1, y1, z1], [x2, y2, z2]) {
   return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1));
 }
 
-// Our main transform function.
-//
-// Takes an input file, an effect function, and a desired output
-// path for the resulting wav file.
-//
-// The effect function is an Elementary function which receives
-// an input channel, performs some process over it, and returns
-// the output. This function should operate over a single channel.
-//
-// The position is an object specifying azimuth, elevation, and influence
-// relating to the effect. The effect is 100% wet at the specified position
-// in the virtual sphere, and 100% dry outside of the sphere of influence around
-// that point. The sphere of influence is specified by the influence property
-// which defines the radius of the sphere. The virtual sphere in which the sphere
-// of influence sits is defined as a unit sphere.
-export async function transform(inputFile, normType, position, effect, outputPath) {
-  let core = new OfflineRenderer();
-  let inputData = decodeAudioData(inputFile);
-  let outputWav = new wavefile.WaveFile();
-
-  await core.initialize({
-    numInputChannels: inputData.channelData.length,
-    numOutputChannels: inputData.channelData.length,
-    sampleRate: inputData.sampleRate,
-  });
-
-  // Our sample data for processing.
-  let inps = inputData.channelData;
-  let outs = Array.from({length: inps.length}).map(_ => new Float32Array(inps[0].length));;
-
-  // Our processing transformation
-  //
-  // For first order processing, we're just using the spatial positions of a
-  // default octahedron decoder. These are [azim, elev] pairs in degrees.
+export function defineTransform(normType, position, effect, inTaps) {
   const pos = [ [0, 0], [90, 0], [180, 0], [270, 0], [0, 90], [0, -90] ];
-  const inTaps = inps.map((x, i) => el.in({channel: i}));
 
-  core.render(...encode(normType, pos, decode(normType, pos, ...inTaps).map((vMicSignal, i) => {
+  return encode(normType, pos, decode(normType, pos, ...inTaps).map((vMicSignal, i) => {
     let wet = effect(vMicSignal);
     let dry = vMicSignal;
     let d = distance(pol2car(pos[i]), pol2car([position.azimuth, position.elevation]));
@@ -167,22 +132,13 @@ export async function transform(inputFile, normType, position, effect, outputPat
 
     // If this particular mic signal is within the influence region, we mix according
     // to distance between the mic signal and the effect position
-    if (d < scaledInfluence) {
-      let mix = 1.0 - 0.95 * (d / scaledInfluence);
-      return el.select(mix, wet, dry);
+    if (d < position.influence) {
+      // Temporary...
+      // let mix = 1.0 - 0.95 * (d / scaledInfluence);
+      // return el.select(mix, wet, dry);
+      return wet;
     }
 
     return dry;
-  })));
-
-  // Pushing samples through the graph
-  core.process(inps, outs);
-
-  // Fill our output wav buffer with the process data and write to disk.
-  // Here we convert back to 16-bit PCM before write.
-  outputWav.fromScratch(inps.length, inputData.sampleRate, '16', outs.map((chan) => {
-    return Int16Array.from(chan, x => x * (2 ** 15));
   }));
-
-  writeFileSync(outputPath, outputWav.toBuffer());
 }

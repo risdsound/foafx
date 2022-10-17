@@ -6,4 +6,6 @@ node_modules
 .parcel-cache
 
 *.swp
+*.pem
+
 .DS_Store

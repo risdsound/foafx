@@ -1,0 +1,16 @@
+{
+  "displayName": "FOAFX",
+  "company": "RISD",
+  "bundleId": "edu.risd.sound.foafx",
+  "version": "1.0.0",
+  "manufacturerCode": "Risd",
+  "pluginCode": "Fofx",
+  "numInputChannels": 2,
+  "numOutputChannels": 2,
+  "window": {
+    "width": 753,
+    "height": 373,
+    "showToolbar": true
+  },
+  "parameters": []
+}
