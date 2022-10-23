@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot}  from 'react-dom/client';
 import {el, resolve} from '@elemaudio/core';
 import {default as core} from '@elemaudio/plugin-renderer';
 import {defineTransform} from '../transform';
@@ -114,9 +114,8 @@ function App(props) {
   );
 }
 
-ReactDOM.render(
+createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,
-  document.getElementById('root')
 );
