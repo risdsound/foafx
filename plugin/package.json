@@ -22,13 +22,14 @@
     ]
   },
   "devDependencies": {
-    "@elemaudio/plugin-renderer": "^1.0.11",
     "@elemaudio/core": "^1.0.3",
+    "@elemaudio/plugin-renderer": "^1.0.11",
     "@parcel/config-default": "^2.5.0",
     "@parcel/transformer-svg-react": "^2.5.0",
     "parcel": "^2.5.0",
     "process": "^0.11.10",
     "react": "^18.1.0",
-    "react-dom": "^18.1.0"
+    "react-dom": "^18.1.0",
+    "zustand": "^4.1.2"
   }
 }
