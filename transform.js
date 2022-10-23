@@ -125,20 +125,10 @@ export function defineTransform(normType, position, effect, inTaps) {
     let dry = vMicSignal;
     let d = distance(pol2car(pos[i]), pol2car([position.azimuth, position.elevation]));
 
-    let influence = Math.max(0, Math.min(1, position.influence));
-    let maxScaledInfluence = Math.sqrt(2) * 2;
-    let minScaledInfluence = 0.8;
-    let scaledInfluence = minScaledInfluence + influence * (maxScaledInfluence - minScaledInfluence);
+    let mix = d <= position.influence ? 1.0 : 0.0;
+    let key = `mix:${pos[i][0]}:${pos[i][1]}`;
 
-    // If this particular mic signal is within the influence region, we mix according
-    // to distance between the mic signal and the effect position
-    if (d < position.influence) {
-      // Temporary...
-      // let mix = 1.0 - 0.95 * (d / scaledInfluence);
-      // return el.select(mix, wet, dry);
-      return wet;
-    }
-
-    return dry;
+    console.log(key, mix, d);
+    return el.select(el.sm(el.const({key, value: mix})), wet, dry);
   }));
 }

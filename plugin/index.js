@@ -2,24 +2,32 @@ import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import {el, resolve} from '@elemaudio/core';
 import {default as core} from '@elemaudio/plugin-renderer';
-
-
 import {defineTransform} from '../transform';
 
+import createHooks from 'zustand'
+import createStore from 'zustand/vanilla'
+
+
+// Initial state management
+const store = createStore(() => {
+  return {
+    azimuth: 0,
+    elevation: 0,
+    influence: Math.sqrt(2),
+  };
+});
+
+const useStore = createHooks(store);
 
 // Our main audio process render step
 //
 // We subscribe this function to the state store above to be invoked
 // on any state change.
 function renderFromStoreState(state) {
-  let props = Object.assign({}, state, {
-    key: 'harnessDefault',
-  });
-
   const position = {
-    azimuth: 0,
-    elevation: 0,
-    influence: 1.09
+    azimuth: 360 * state.azimuth,
+    elevation: 360 * state.elevation,
+    influence: state.influence,
   };
 
   console.log(core.render(...defineTransform('sn3d', position, (x) => el.mul(0, x), [
@@ -51,6 +59,26 @@ let persistenceSubscription = null;
 // and kick off with the initial render, either from persisted host
 // state or from default store state.
 core.on('load', function(e) {
+  // Unsubscribe if this is a second load event
+  if (renderSubscription) { renderSubscription(); }
+  if (persistenceSubscription) { persistenceSubscription(); }
+
+  renderSubscription = store.subscribe(renderFromStoreState);
+  persistenceSubscription = store.subscribe((state) => queueMicrotask(() => core.dispatch('saveState', JSON.stringify(store.getState()))));
+
+  // Here we also set up bindings for state persistence with the host
+  core.on('loadState', (e) => {
+    if (typeof e.value === 'string' && e.value.length > 0) {
+      console.log('Received load state event');
+
+      try {
+        store.setState(JSON.parse(e.value));
+      } catch (err) {
+        console.error('Failed parsing host state', err, e.value);
+      }
+    }
+  });
+
   let loadState = null;
 
   if (typeof e.state === 'string' && e.state.length > 0) {
@@ -67,7 +95,7 @@ core.on('load', function(e) {
   if (loadState) {
     store.setState(loadState);
   } else {
-    renderFromStoreState({});
+    renderFromStoreState(store.getState());
   }
 });
 
@@ -76,8 +104,13 @@ core.initialize();
 
 // Mount the interface
 function App(props) {
+  let state = useStore();
+
+  let requestStateUpdate = (callback) => store.setState(callback(state));
+  let requestParamValueUpdate = (name, value) => core.dispatch('setParameterValue', {name, value});
+
   return (
-    <div>hi</div>
+    <div>foafx</div>
   );
 }
 

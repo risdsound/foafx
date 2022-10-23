@@ -12,5 +12,8 @@
     "height": 373,
     "showToolbar": true
   },
-  "parameters": []
+  "parameters": [
+    { "paramId": "azimuth",     "name": "Azimuth",      "min": 0, "max": 1, "defaultValue": 0.0 },
+    { "paramId": "elevation",   "name": "Elevation",    "min": 0, "max": 1, "defaultValue": 0.0 }
+  ]
 }
