@@ -2,10 +2,10 @@
   "name": "foafx-plugin",
   "private": true,
   "scripts": {
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist export",
     "start": "npm run clean && mkdir dist && cp manifest.json dist/elementary.config.json && parcel --no-cache --port 3000 --https --cert localhost-cert.pem --key localhost-key.pem index.html",
     "build": "npm run clean && parcel build --no-source-maps --no-cache --public-url '.' index.html",
-    "export": "npm run build && elem-export -m manifest.json -o dist dist/index.html"
+    "export": "npm run build && mkdir export && elem-export -m manifest.json -o export ./dist"
   },
   "browserslist": {
     "production": [
@@ -22,8 +22,8 @@
     ]
   },
   "devDependencies": {
-    "@elemaudio/core": "^1.0.3",
-    "@elemaudio/plugin-renderer": "^1.0.11",
+    "@elemaudio/core": "^1.0.8",
+    "@elemaudio/plugin-renderer": "^1.0.12",
     "@parcel/config-default": "^2.5.0",
     "@parcel/transformer-svg-react": "^2.5.0",
     "parcel": "^2.5.0",

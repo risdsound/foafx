@@ -1,4 +1,4 @@
-import wavefile from 'wavefile';
+import { Wavefile } from 'wavefile';
 import { readFileSync } from 'fs';
 
 import * as jshlib from 'spherical-harmonic-transform';
@@ -8,7 +8,7 @@ import { el } from '@elemaudio/core';
 
 // A quick helper function for reading wav files into Float32Array buffers
 export function decodeAudioData(path) {
-  const wav = new wavefile.WaveFile(readFileSync(path));
+  const wav = new WaveFile(readFileSync(path));
   const bitRate = wav.fmt.bitsPerSample;
   const sampleRate = wav.fmt.sampleRate;
   const channelData = wav.getSamples().map(function(chan) {
