@@ -110,7 +110,27 @@ function App(props) {
   let requestParamValueUpdate = (name, value) => core.dispatch('setParameterValue', {name, value});
 
   return (
-    <div>foafx</div>
+    <div className="h-full w-full p-4 bg-slate-400">
+      <h1 className="text-lg font-semibold">FOAFX</h1>
+      <table class="table-fixed w-full">
+        <tbody>
+          <tr>
+            <td>Azimuth</td>
+            <td>{(360 * state.azimuth).toFixed(1)}deg</td>
+            <td>
+              <input type="range" min="0" max="1" step="0.001" value={state.azimuth} onChange={(e) => requestParamValueUpdate('azimuth', parseFloat(e.target.value))} />
+            </td>
+          </tr>
+          <tr>
+            <td>Elevation</td>
+            <td>{(360 * state.elevation).toFixed(1)}deg</td>
+            <td>
+              <input type="range" min="0" max="1" step="0.001" value={state.elevation} onChange={(e) => requestParamValueUpdate('elevation', parseFloat(e.target.value))} />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   );
 }
 
