@@ -3,9 +3,12 @@ import { createRoot}  from 'react-dom/client';
 import {el, resolve} from '@elemaudio/core';
 import {default as core} from '@elemaudio/plugin-renderer';
 import {defineTransform} from '../transform';
+import EffectSelect from './EffectSelect';
 
 import createHooks from 'zustand'
 import createStore from 'zustand/vanilla'
+
+import { bitcrush } from '../effects/bitcrush.js';
 
 
 // Initial state management
@@ -14,10 +17,27 @@ const store = createStore(() => {
     azimuth: 0,
     elevation: 0,
     influence: Math.sqrt(2),
+    effectId: 3,
   };
 });
 
 const useStore = createHooks(store);
+
+// Audio effect helper
+function getEffectDefinition(state) {
+  switch (state.effectId) {
+    case 1: // Gain
+      return (x) => el.mul(0, x);
+    case 4: // Bitcrush
+      return (x) => bitcrush({bitDepth: 5}, x);
+    case 2: // Chorus
+    case 3: // Flanger
+    case 5:
+    case 6:
+    default:
+      return (x) => x;
+  }
+}
 
 // Our main audio process render step
 //
@@ -30,7 +50,9 @@ function renderFromStoreState(state) {
     influence: state.influence,
   };
 
-  console.log(core.render(...defineTransform('sn3d', position, (x) => el.mul(0, x), [
+  const effect = getEffectDefinition(state);
+
+  console.log(core.render(...defineTransform('sn3d', position, effect, [
     el.in({channel: 0}),
     el.in({channel: 1}),
     el.in({channel: 2}),
@@ -110,26 +132,35 @@ function App(props) {
   let requestParamValueUpdate = (name, value) => core.dispatch('setParameterValue', {name, value});
 
   return (
-    <div className="h-full w-full p-4 bg-slate-400">
-      <h1 className="text-lg font-semibold">FOAFX</h1>
-      <table class="table-fixed w-full">
-        <tbody>
-          <tr>
-            <td>Azimuth</td>
-            <td>{(360 * state.azimuth).toFixed(1)}deg</td>
-            <td>
-              <input type="range" min="0" max="1" step="0.001" value={state.azimuth} onChange={(e) => requestParamValueUpdate('azimuth', parseFloat(e.target.value))} />
-            </td>
-          </tr>
-          <tr>
-            <td>Elevation</td>
-            <td>{(360 * state.elevation).toFixed(1)}deg</td>
-            <td>
-              <input type="range" min="0" max="1" step="0.001" value={state.elevation} onChange={(e) => requestParamValueUpdate('elevation', parseFloat(e.target.value))} />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div className="h-full w-full bg-slate-200">
+      <div className="w-full h-6 bg-gray-800 flex items-center justify-between px-4 py-6">
+        <h1 className="text-lg font-semibold text-gray-200">FOAFX</h1>
+        <h1 className="text-sm text-gray-200">SRST</h1>
+      </div>
+      <div className="w-full flex">
+        <EffectSelect
+          className="flex-initial"
+          selected={state.effectId}
+          setSelectedEffect={(id) => store.setState({effectId: id})} />
+        <table className="table-fixed flex-1">
+          <tbody>
+            <tr>
+              <td>Azimuth</td>
+              <td>{(360 * state.azimuth).toFixed(1)}deg</td>
+              <td>
+                <input type="range" min="0" max="1" step="0.001" value={state.azimuth} onChange={(e) => requestParamValueUpdate('azimuth', parseFloat(e.target.value))} />
+              </td>
+            </tr>
+            <tr>
+              <td>Elevation</td>
+              <td>{(360 * state.elevation).toFixed(1)}deg</td>
+              <td>
+                <input type="range" min="0" max="1" step="0.001" value={state.elevation} onChange={(e) => requestParamValueUpdate('elevation', parseFloat(e.target.value))} />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

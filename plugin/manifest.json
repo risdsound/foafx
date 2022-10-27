@@ -10,7 +10,7 @@
   "window": {
     "width": 753,
     "height": 373,
-    "showToolbar": true
+    "showToolbar": false
   },
   "parameters": [
     { "paramId": "azimuth",     "name": "Azimuth",      "min": 0, "max": 1, "defaultValue": 0.0 },
