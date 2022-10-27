@@ -11,6 +11,7 @@ import createStore from 'zustand/vanilla'
 import manifest from './manifest.json';
 import { bitcrush } from '../effects/bitcrush';
 import { chorus } from '../effects/chorus';
+import { delay } from '../effects/delay';
 import { distortion } from '../effects/distortion';
 import { flanger } from '../effects/flanger';
 import { gain } from '../effects/gain';
@@ -19,7 +20,7 @@ import { gain } from '../effects/gain';
 // Initial state management
 const store = createStore(() => {
   return {
-    influence: Math.sqrt(2),
+    influence: Math.sqrt(2) / 2,
     effectId: 3,
     ...manifest.parameters.reduce((acc, param) => {
       return Object.assign(acc, {
@@ -44,7 +45,8 @@ function getEffectDefinition(state) {
       return (x) => bitcrush({key: 'bc', bitDepth: 2 + 14 * state.bitDepth}, x);
     case 5: // Distortion
       return (x) => distortion({key: 'di', inputGain: (64 * state.distInputGain) - 32, outputGain: (64 * state.distOutputGain) - 32}, x);
-    case 6:
+    case 6: // Delay
+      return (x) => delay({key: 'de', delayTime: 10000 * state.delayTime, feedback: 0.999 * state.delayFeedback}, x);
     default:
       return (x) => x;
   }
