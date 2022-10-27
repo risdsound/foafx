@@ -11,6 +11,7 @@ import createStore from 'zustand/vanilla'
 import manifest from './manifest.json';
 import { bitcrush } from '../effects/bitcrush';
 import { chorus } from '../effects/chorus';
+import { flanger } from '../effects/flanger';
 import { gain } from '../effects/gain';
 
 
@@ -36,9 +37,10 @@ function getEffectDefinition(state) {
       return (x) => gain({key: 'gg', gainDecibels: (64 * state.gain) - 32}, x);
     case 2: // Chorus
       return (x) => chorus({key: 'ch', rate: 10 * state.chorusRate, depth: 10 + 30 * state.chorusDepth}, x);
+    case 3: // Flanger
+      return (x) => flanger({key: 'fl', rate: 2 * state.flangerRate, depth: 1 + 19 * state.flangerDepth, feedback: 0.999 * (2 * state.flangerFbk - 1)}, x);
     case 4: // Bitcrush
       return (x) => bitcrush({key: 'bc', bitDepth: 2 + 14 * state.bitDepth}, x);
-    case 3: // Flanger
     case 5:
     case 6:
     default:
