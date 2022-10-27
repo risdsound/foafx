@@ -11,6 +11,7 @@ import createStore from 'zustand/vanilla'
 import manifest from './manifest.json';
 import { bitcrush } from '../effects/bitcrush';
 import { chorus } from '../effects/chorus';
+import { distortion } from '../effects/distortion';
 import { flanger } from '../effects/flanger';
 import { gain } from '../effects/gain';
 
@@ -41,7 +42,8 @@ function getEffectDefinition(state) {
       return (x) => flanger({key: 'fl', rate: 2 * state.flangerRate, depth: 1 + 19 * state.flangerDepth, feedback: 0.999 * (2 * state.flangerFbk - 1)}, x);
     case 4: // Bitcrush
       return (x) => bitcrush({key: 'bc', bitDepth: 2 + 14 * state.bitDepth}, x);
-    case 5:
+    case 5: // Distortion
+      return (x) => distortion({key: 'di', inputGain: (64 * state.distInputGain) - 32, outputGain: (64 * state.distOutputGain) - 32}, x);
     case 6:
     default:
       return (x) => x;
@@ -151,14 +153,14 @@ function App(props) {
           className="flex-initial"
           selected={state.effectId}
           setSelectedEffect={(id) => store.setState({effectId: id})} />
-        <table className="table-fixed flex-1">
+        <table className="ml-8 table-fixed flex-1">
           <tbody>
-            {manifest.parameters.map((param) => {
+            {manifest.parameters.map((param, i) => {
               return (
-                <tr key={param.paramId}>
-                  <td>{param.name}</td>
-                  <td>{state[param.paramId].toFixed(1)}</td>
-                  <td>
+                <tr key={param.paramId} className={i % 2 === 0 ? 'bg-slate-300' : 'bg-slate-200'}>
+                  <td className="p-1 text-sm">{param.name}</td>
+                  <td className="p-1 text-sm">{state[param.paramId].toFixed(1)}</td>
+                  <td className="p-1 text-sm">
                     <input
                       type="range"
                       min="0"
