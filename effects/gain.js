@@ -8,5 +8,13 @@ export function gain(props, input) {
   let db2gain = (db) => Math.pow(10, db / 20);
   let gain = db2gain(Math.max(-32, Math.min(32, props.gainDecibels)));
 
+  const hasKey = props.hasOwnProperty('key') &&
+    typeof props.key === 'string' &&
+    props.key.length > 0;
+
+  if (hasKey) {
+    gain = el.sm(el.const({key: props.key, value: gain}));
+  }
+
   return el.mul(input, gain);
 }

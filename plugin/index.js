@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createRoot}  from 'react-dom/client';
+import {createRoot}  from 'react-dom/client';
 import {el, resolve} from '@elemaudio/core';
 import {default as core} from '@elemaudio/plugin-renderer';
 import {defineTransform} from '../transform';
@@ -8,16 +8,21 @@ import EffectSelect from './EffectSelect';
 import createHooks from 'zustand'
 import createStore from 'zustand/vanilla'
 
-import { bitcrush } from '../effects/bitcrush.js';
+import manifest from './manifest.json';
+import { bitcrush } from '../effects/bitcrush';
+import { gain } from '../effects/gain';
 
 
 // Initial state management
 const store = createStore(() => {
   return {
-    azimuth: 0,
-    elevation: 0,
     influence: Math.sqrt(2),
     effectId: 3,
+    ...manifest.parameters.reduce((acc, param) => {
+      return Object.assign(acc, {
+        [param.paramId]: param.defaultValue,
+      });
+    }, {}),
   };
 });
 
@@ -27,9 +32,9 @@ const useStore = createHooks(store);
 function getEffectDefinition(state) {
   switch (state.effectId) {
     case 1: // Gain
-      return (x) => el.mul(0, x);
+      return (x) => gain({key: 'gg', gainDecibels: (64 * state.gain) - 32}, x);
     case 4: // Bitcrush
-      return (x) => bitcrush({bitDepth: 5}, x);
+      return (x) => bitcrush({key: 'bc', bitDepth: 2 + 14 * state.bitDepth}, x);
     case 2: // Chorus
     case 3: // Flanger
     case 5:
@@ -144,20 +149,23 @@ function App(props) {
           setSelectedEffect={(id) => store.setState({effectId: id})} />
         <table className="table-fixed flex-1">
           <tbody>
-            <tr>
-              <td>Azimuth</td>
-              <td>{(360 * state.azimuth).toFixed(1)}deg</td>
-              <td>
-                <input type="range" min="0" max="1" step="0.001" value={state.azimuth} onChange={(e) => requestParamValueUpdate('azimuth', parseFloat(e.target.value))} />
-              </td>
-            </tr>
-            <tr>
-              <td>Elevation</td>
-              <td>{(360 * state.elevation).toFixed(1)}deg</td>
-              <td>
-                <input type="range" min="0" max="1" step="0.001" value={state.elevation} onChange={(e) => requestParamValueUpdate('elevation', parseFloat(e.target.value))} />
-              </td>
-            </tr>
+            {manifest.parameters.map((param) => {
+              return (
+                <tr key={param.paramId}>
+                  <td>{param.name}</td>
+                  <td>{state[param.paramId].toFixed(1)}</td>
+                  <td>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.001"
+                      value={state[param.paramId]}
+                      onChange={(e) => requestParamValueUpdate(param.paramId, parseFloat(e.target.value))} />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
