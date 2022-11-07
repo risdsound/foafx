@@ -14,8 +14,8 @@ function DelayComposite({props, context, children}) {
     props.key.length > 0;
 
   if (hasKey) {
-    feedback = el.sm(el.const({value: feedback}));
-    delayTimeMs = el.sm(el.const({value: delayTimeMs}));
+    feedback = el.sm(el.const({key: `${props.key}:feedback`, value: feedback}));
+    delayTimeMs = el.sm(el.const({key: `${props.key}:delayTime`, value: delayTimeMs}));
   }
 
   return el.delay({size: sr * 10 + 10}, el.ms2samps(delayTimeMs), feedback, input);
