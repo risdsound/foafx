@@ -10,15 +10,16 @@ export function bitcrush(props, input) {
     props.key.length > 0;
 
   let bitDepth = props.bitDepth;
-  let b = Math.round(Math.max(2, Math.min(16, bitDepth)));
+  let b = Math.round(Math.max(3, Math.min(16, bitDepth)));
 
-  let quant = 0.5 * Math.pow(2, b);
+  let quant = Math.pow(2, b - 1);
   let dequant = 1.0 / quant;
+  let round = (x) => el.floor(el.add(0.5, x));
 
   if (hasKey) {
     quant = el.sm(el.const({key: `${props.key}:quant`, value: quant}));
     dequant = el.sm(el.const({key: `${props.key}:dequant`, value: dequant}));
   }
 
-  return el.mul(dequant, el.floor(el.mul(quant, input)));
+  return el.mul(dequant, round(el.mul(quant, input)));
 }
