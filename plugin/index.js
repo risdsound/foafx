@@ -21,7 +21,7 @@ import { gain } from '../effects/gain';
 const store = createStore(() => {
   return {
     influence: Math.sqrt(2) / 2,
-    effectId: 3,
+    effectId: 1,
     ...manifest.parameters.reduce((acc, param) => {
       return Object.assign(acc, {
         [param.paramId]: param.defaultValue,
@@ -32,21 +32,85 @@ const store = createStore(() => {
 
 const useStore = createHooks(store);
 
+// Helpers for parameter values and readouts
+function linscale(x, min, max, outMin, outMax) {
+  let a = (x - min) / (max - min);
+  return outMin + a * (outMax - outMin);
+}
+
+function pct(x) {
+  return `${Math.round(linscale(x, 0, 1, 0, 100))}%`;
+}
+
+const valueMapFns = {
+  gain: (x) => linscale(x, 0, 1, -96, 12),
+  bitDepth: (x) => linscale(x, 0, 1, 3, 16),
+  chorusRate: (x) => linscale(x, 0, 1, 0.001, 10),
+  chorusDepth: (x) => linscale(x, 0, 1, 10, 30),
+  flangerRate: (x) => linscale(x, 0, 1, 0.001, 2),
+  flangerDepth: (x) => linscale(x, 0, 1, 0.001, 10),
+  flangerFbk: (x) => linscale(x, 0, 1, 0.0, 0.99),
+  distInputGain: (x) => linscale(x, 0, 1, -36, 36),
+  distOutputGain: (x) => linscale(x, 0, 1, -12, 12),
+  delayTime: (x) => linscale(x, 0, 1, 0.001, 10000),
+  delayFeedback: (x) => linscale(x, 0, 1, 0.0, 0.99),
+};
+
+const valueReadoutFns = {
+  gain: (x) => `${valueMapFns.gain(x).toFixed(1)}dB`,
+  bitDepth: (x) => `${Math.round(valueMapFns.bitDepth(x))}`,
+  chorusRate: (x) => `${valueMapFns.chorusRate(x).toFixed(1)}Hz`,
+  chorusDepth: (x) => `${valueMapFns.chorusDepth(x).toFixed(1)}ms`,
+  flangerRate: (x) => `${valueMapFns.flangerRate(x).toFixed(1)}Hz`,
+  flangerDepth: (x) => `${valueMapFns.flangerDepth(x).toFixed(1)}ms`,
+  flangerFbk: (x) => pct(valueMapFns.flangerFbk(x)),
+  distInputGain: (x) => `${valueMapFns.distInputGain(x).toFixed(1)}dB`,
+  distOutputGain: (x) => `${valueMapFns.distOutputGain(x).toFixed(1)}dB`,
+  delayTime: (x) => `${valueMapFns.delayTime(x).toFixed(1)}ms`,
+  delayFeedback: (x) => pct(valueMapFns.delayFeedback(x)),
+  azimuth: (x) => `${(360 * x).toFixed(1)}deg`,
+  elevation: (x) => `${(360 * x).toFixed(1)}deg`,
+  influence: (x) => x.toFixed(1),
+};
+
 // Audio effect helper
 function getEffectDefinition(state) {
   switch (state.effectId) {
-    case 1: // Gain
-      return (x) => gain({key: 'gg', gainDecibels: (64 * state.gain) - 32}, x);
-    case 2: // Chorus
-      return (x) => chorus({key: 'ch', rate: 10 * state.chorusRate, depth: 10 + 30 * state.chorusDepth}, x);
-    case 3: // Flanger
-      return (x) => flanger({key: 'fl', rate: 2 * state.flangerRate, depth: 1 + 19 * state.flangerDepth, feedback: 0.999 * (2 * state.flangerFbk - 1)}, x);
-    case 4: // Bitcrush
-      return (x) => bitcrush({key: 'bc', bitDepth: 2 + 14 * state.bitDepth}, x);
-    case 5: // Distortion
-      return (x) => distortion({key: 'di', inputGain: (64 * state.distInputGain) - 32, outputGain: (64 * state.distOutputGain) - 32}, x);
-    case 6: // Delay
-      return (x) => delay({key: 'de', delayTime: 10000 * state.delayTime, feedback: 0.999 * state.delayFeedback}, x);
+    case 1:
+      return (x) => gain({
+        key: 'gg',
+        gainDecibels: valueMapFns.gain(state.gain),
+      }, x);
+    case 2:
+      return (x) => chorus({
+        key: 'ch',
+        rate: valueMapFns.chorusRate(state.chorusRate),
+        depth: valueMapFns.chorusDepth(state.chorusDepth),
+      }, x);
+    case 3:
+      return (x) => flanger({
+        key: 'fl',
+        rate: valueMapFns.flangerRate(state.flangerRate),
+        depth: valueMapFns.flangerDepth(state.flangerDepth),
+        feedback: valueMapFns.flangerFbk(state.flangerFbk),
+      }, x);
+    case 4:
+      return (x) => bitcrush({
+        key: 'bc',
+        bitDepth: valueMapFns.bitDepth(state.bitDepth),
+      }, x);
+    case 5:
+      return (x) => distortion({
+        key: 'di',
+        inputGain: valueMapFns.distInputGain(state.distInputGain),
+        outputGain: valueMapFns.distOutputGain(state.distOutputGain),
+      }, x);
+    case 6:
+      return (x) => delay({
+        key: 'de',
+        delayTime: valueMapFns.delayTime(state.delayTime),
+        feedback: valueMapFns.delayFeedback(state.delayFeedback),
+      }, x);
     default:
       return (x) => x;
   }
@@ -161,7 +225,7 @@ function App(props) {
               return (
                 <tr key={param.paramId} className={i % 2 === 0 ? 'bg-slate-300' : 'bg-slate-200'}>
                   <td className="p-1 text-sm">{param.name}</td>
-                  <td className="p-1 text-sm">{state[param.paramId].toFixed(1)}</td>
+                  <td className="p-1 text-sm">{valueReadoutFns[param.paramId](state[param.paramId])}</td>
                   <td className="p-1 text-sm">
                     <input
                       type="range"
