@@ -38,6 +38,11 @@ function linscale(x, min, max, outMin, outMax) {
   return outMin + a * (outMax - outMin);
 }
 
+function logscale(x, min, max, outMin, outMax) {
+  let a = (x - min) / (max - min);
+  return outMin + (a * a) * (outMax - outMin);
+}
+
 function pct(x) {
   return `${Math.round(linscale(x, 0, 1, 0, 100))}%`;
 }
@@ -45,14 +50,14 @@ function pct(x) {
 const valueMapFns = {
   gain: (x) => linscale(x, 0, 1, -96, 12),
   bitDepth: (x) => linscale(x, 0, 1, 3, 16),
-  chorusRate: (x) => linscale(x, 0, 1, 0.001, 10),
-  chorusDepth: (x) => linscale(x, 0, 1, 10, 30),
-  flangerRate: (x) => linscale(x, 0, 1, 0.001, 2),
-  flangerDepth: (x) => linscale(x, 0, 1, 0.001, 10),
+  chorusRate: (x) => logscale(x, 0, 1, 0.001, 10),
+  chorusDepth: (x) => logscale(x, 0, 1, 10, 30),
+  flangerRate: (x) => logscale(x, 0, 1, 0.001, 4),
+  flangerDepth: (x) => logscale(x, 0, 1, 0.001, 7),
   flangerFbk: (x) => linscale(x, 0, 1, 0.0, 0.99),
   distInputGain: (x) => linscale(x, 0, 1, -36, 36),
   distOutputGain: (x) => linscale(x, 0, 1, -12, 12),
-  delayTime: (x) => linscale(x, 0, 1, 0.001, 10000),
+  delayTime: (x) => logscale(x, 0, 1, 0.001, 5000),
   delayFeedback: (x) => linscale(x, 0, 1, 0.0, 0.99),
 };
 
@@ -224,8 +229,8 @@ function App(props) {
             {manifest.parameters.map((param, i) => {
               return (
                 <tr key={param.paramId} className={i % 2 === 0 ? 'bg-slate-300' : 'bg-slate-200'}>
-                  <td className="p-1 text-sm">{param.name}</td>
-                  <td className="p-1 text-sm">{valueReadoutFns[param.paramId](state[param.paramId])}</td>
+                  <td className="p-1 text-sm w-36">{param.name}</td>
+                  <td className="p-1 text-sm w-36">{valueReadoutFns[param.paramId](state[param.paramId])}</td>
                   <td className="p-1 text-sm">
                     <input
                       type="range"
