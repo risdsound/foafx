@@ -144,7 +144,7 @@ export function defineTransform(normType, position, effect, inTaps) {
       case 'mix:180:0':
         mix = -1 * cosElev * cosAzim;
         break;
-      case 'mix:90:0':
+      case 'mix:270:0':
         mix = -1 * cosElev * sinAzim;
         break;
       case 'mix:0:90':
