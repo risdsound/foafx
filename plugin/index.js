@@ -3,7 +3,7 @@ import {createRoot}  from 'react-dom/client';
 import {el, resolve} from '@elemaudio/core';
 import {default as core} from '@elemaudio/plugin-renderer';
 import {defineTransform} from '../transform';
-import EffectSelect from './EffectSelect';
+import Dropdown from './Dropdown';
 
 import createHooks from 'zustand'
 import createStore from 'zustand/vanilla'
@@ -16,6 +16,16 @@ import { distortion } from '../effects/distortion';
 import { flanger } from '../effects/flanger';
 import { gain } from '../effects/gain';
 
+
+// Effect enumeration
+const effects = [
+  { id: 1, name: 'Gain' },
+  { id: 2, name: 'Chorus' },
+  { id: 3, name: 'Flanger' },
+  { id: 4, name: 'Bitcrush' },
+  { id: 5, name: 'Distortion' },
+  { id: 6, name: 'Delay' },
+];
 
 // Initial state management
 const store = createStore(() => {
@@ -214,37 +224,40 @@ function App(props) {
   let requestParamValueUpdate = (name, value) => core.dispatch('setParameterValue', {name, value});
 
   return (
-    <div className="h-full w-full bg-slate-200">
+    <div className="h-full w-full bg-neutral-400">
       <div className="w-full h-6 bg-gray-800 flex items-center justify-between px-4 py-6">
         <h1 className="text-lg font-semibold text-gray-200">FOAFX</h1>
         <h1 className="text-sm text-gray-200">SRST</h1>
       </div>
       <div className="w-full flex">
-        <EffectSelect
-          className="flex-initial"
-          selected={state.effectId}
-          setSelectedEffect={(id) => store.setState({effectId: id})} />
-        <table className="ml-8 table-fixed flex-1">
-          <tbody>
-            {manifest.parameters.map((param, i) => {
-              return (
-                <tr key={param.paramId} className={i % 2 === 0 ? 'bg-slate-300' : 'bg-slate-200'}>
-                  <td className="p-1 text-sm w-36">{param.name}</td>
-                  <td className="p-1 text-sm w-36">{valueReadoutFns[param.paramId](state[param.paramId])}</td>
-                  <td className="p-1 text-sm">
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.001"
-                      value={state[param.paramId]}
-                      onChange={(e) => requestParamValueUpdate(param.paramId, parseFloat(e.target.value))} />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <div className="flex-1">
+          <Dropdown
+            className="my-2"
+            value={state.effectId}
+            options={effects}
+            onChange={(e) => store.setState({effectId: parseInt(e.target.value)})} />
+          <table className="table-fixed w-full">
+            <tbody>
+              {manifest.parameters.map((param, i) => {
+                return (
+                  <tr key={param.paramId} className={i % 2 === 0 ? 'bg-slate-300' : 'bg-slate-200'}>
+                    <td className="p-1 text-sm w-36">{param.name}</td>
+                    <td className="p-1 text-sm w-36">{valueReadoutFns[param.paramId](state[param.paramId])}</td>
+                    <td className="p-1 text-sm">
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.001"
+                        value={state[param.paramId]}
+                        onChange={(e) => requestParamValueUpdate(param.paramId, parseFloat(e.target.value))} />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
