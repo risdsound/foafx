@@ -223,6 +223,9 @@ function App(props) {
   let requestStateUpdate = (callback) => store.setState(callback(state));
   let requestParamValueUpdate = (name, value) => core.dispatch('setParameterValue', {name, value});
 
+  let elev = state.elevation * 2 * Math.PI;
+  let azim = state.azimuth * 2 * Math.PI;
+
   return (
     <div className="h-full w-full bg-neutral-400">
       <div className="w-full h-6 bg-gray-800 flex items-center justify-between px-4 py-6">
@@ -236,30 +239,30 @@ function App(props) {
             <circle className="stroke-1 stroke-neutral-900 fill-none" cx="100" cy="100" r="20"/>
             <circle className="stroke-1 stroke-neutral-900 fill-none" cx="100" cy="100" r="50"/>
             <circle className="stroke-1 stroke-neutral-900 fill-none" cx="100" cy="100" r="80"/>
-            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="100" cy="20" r="4"/>
-            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="100" cy="180" r="4"/>
-            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="20" cy="100" r="4"/>
-            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="180" cy="100" r="4"/>
+            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="100" cy="20" r="4" style={{opacity: Math.cos(elev) * Math.cos(azim)}} />
+            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="100" cy="180" r="4" style={{opacity: Math.cos(elev) * Math.cos(Math.PI + azim)}} />
+            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="20" cy="100" r="4" style={{opacity: Math.cos(elev) * Math.sin(azim)}} />
+            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="180" cy="100" r="4" style={{opacity: Math.cos(elev) * Math.sin(Math.PI + azim)}} />
             <circle
               className="stroke-1 stroke-neutral-900 fill-sky-600"
               r="4"
-              cx={100 - 80 * Math.sin(2 * Math.PI * state.azimuth) * Math.cos(2 * Math.PI * state.elevation)}
-              cy={100 - 80 * Math.cos(2 * Math.PI * state.azimuth) * Math.cos(2 * Math.PI * state.elevation)} />
+              cx={100 - 80 * Math.sin(azim) * Math.cos(elev)}
+              cy={100 - 80 * Math.cos(azim) * Math.cos(elev)} />
           </svg>
           <svg className="flex-1" viewBox="0 0 200 200">
             <text className="font-base text-neutral-900 text-xs" x="20" y="20">XZ</text>
             <circle className="stroke-1 stroke-neutral-900 fill-none" cx="100" cy="100" r="20"/>
             <circle className="stroke-1 stroke-neutral-900 fill-none" cx="100" cy="100" r="50"/>
             <circle className="stroke-1 stroke-neutral-900 fill-none" cx="100" cy="100" r="80"/>
-            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="100" cy="20" r="4"/>
-            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="100" cy="180" r="4"/>
-            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="20" cy="100" r="4"/>
-            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="180" cy="100" r="4"/>
+            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="100" cy="20" r="4" style={{opacity: Math.sin(elev)}} />
+            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="100" cy="180" r="4" style={{opacity: Math.sin(Math.PI + elev)}} />
+            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="20" cy="100" r="4" style={{opacity: Math.sin(azim) * Math.cos(elev)}} />
+            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="180" cy="100" r="4" style={{opacity: Math.sin(azim) * Math.cos(Math.PI + elev)}} />
             <circle
               className="stroke-1 stroke-neutral-900 fill-sky-600"
               r="4"
-              cx={100 + 80 * Math.cos(2 * Math.PI * state.elevation) * Math.sin(2 * Math.PI * state.azimuth)}
-              cy={100 - 80 * Math.sin(2 * Math.PI * state.elevation)} />
+              cx={100 - 80 * Math.cos(elev) * Math.sin(azim)}
+              cy={100 - 80 * Math.sin(elev)} />
           </svg>
         </div>
         <div className="flex-1">
