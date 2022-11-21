@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@elemaudio/core": "^1.0.8",
-    "@elemaudio/plugin-renderer": "^1.0.15",
+    "@elemaudio/plugin-renderer": "^1.0.16",
     "@parcel/config-default": "^2.5.0",
     "@parcel/transformer-svg-react": "^2.5.0",
     "parcel": "^2.5.0",
