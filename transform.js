@@ -123,12 +123,19 @@ export function defineTransform(normType, position, effect, inTaps) {
   return encode(normType, pos, decode(normType, pos, ...inTaps).map((vMicSignal, i) => {
     let wet = effect(vMicSignal);
     let dry = vMicSignal;
-    let d = distance(pol2car(pos[i]), pol2car([position.azimuth, position.elevation]));
 
-    let mix = d <= position.influence ? 1.0 : 0.0;
+    let deg2rad = (deg) => deg * Math.PI / 180;
+    let [micAzim, micElev] = pos[i];
+
+    // This is roughly a sine panning law adapted for three dimensional space,
+    // using both azimuth and elevation to derive a gain coefficient
+    const azimCoeff = Math.cos(deg2rad(position.azimuth - micAzim));
+    const elevCoeff = Math.cos(deg2rad(position.elevation - micElev));
+
+    let mix =  Math.max(0, azimCoeff * elevCoeff);
     let key = `mix:${pos[i][0]}:${pos[i][1]}`;
 
-    console.log(key, mix, d);
+    console.log(key, mix);
     return el.select(el.sm(el.const({key, value: mix})), wet, dry);
   }));
 }
