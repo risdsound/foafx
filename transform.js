@@ -119,21 +119,44 @@ function distance([x1, y1, z1], [x2, y2, z2]) {
 
 export function defineTransform(normType, position, effect, inTaps) {
   const pos = [ [0, 0], [90, 0], [180, 0], [270, 0], [0, 90], [0, -90] ];
+  const deg2rad = (deg) => deg * Math.PI / 180;
+
+  const cosAzim = Math.cos(deg2rad(position.azimuth));
+  const sinAzim = Math.sin(deg2rad(position.azimuth));
+  const cosElev = Math.cos(deg2rad(position.elevation));
+  const sinElev = Math.sin(deg2rad(position.elevation));
 
   return encode(normType, pos, decode(normType, pos, ...inTaps).map((vMicSignal, i) => {
     let wet = effect(vMicSignal);
     let dry = vMicSignal;
-
-    let deg2rad = (deg) => deg * Math.PI / 180;
-    let [micAzim, micElev] = pos[i];
+    let key = `mix:${pos[i][0]}:${pos[i][1]}`;
+    let mix = 0;
 
     // This is roughly a sine panning law adapted for three dimensional space,
     // using both azimuth and elevation to derive a gain coefficient
-    const azimCoeff = Math.cos(deg2rad(position.azimuth - micAzim));
-    const elevCoeff = Math.cos(deg2rad(position.elevation - micElev));
+    switch (key) {
+      case 'mix:0:0':
+        mix = cosElev * cosAzim;
+        break;
+      case 'mix:90:0':
+        mix = cosElev * sinAzim;
+        break;
+      case 'mix:180:0':
+        mix = -1 * cosElev * cosAzim;
+        break;
+      case 'mix:90:0':
+        mix = -1 * cosElev * sinAzim;
+        break;
+      case 'mix:0:90':
+        mix = sinElev;
+        break;
+      case 'mix:0:-90':
+        mix = -1 * sinElev;
+        break;
+    }
 
-    let mix =  Math.max(0, azimCoeff * elevCoeff);
-    let key = `mix:${pos[i][0]}:${pos[i][1]}`;
+    // Prevent phase inversion
+    mix = Math.max(0, mix);
 
     console.log(key, mix);
     return el.select(el.sm(el.const({key, value: mix})), wet, dry);
