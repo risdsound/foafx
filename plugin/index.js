@@ -230,6 +230,38 @@ function App(props) {
         <h1 className="text-sm text-gray-200">SRST</h1>
       </div>
       <div className="w-full flex">
+        <div className="flex-1 flex">
+          <svg className="flex-1" viewBox="0 0 200 200">
+            <text className="font-base text-neutral-900 text-xs" x="20" y="20">XY</text>
+            <circle className="stroke-1 stroke-neutral-900 fill-none" cx="100" cy="100" r="20"/>
+            <circle className="stroke-1 stroke-neutral-900 fill-none" cx="100" cy="100" r="50"/>
+            <circle className="stroke-1 stroke-neutral-900 fill-none" cx="100" cy="100" r="80"/>
+            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="100" cy="20" r="4"/>
+            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="100" cy="180" r="4"/>
+            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="20" cy="100" r="4"/>
+            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="180" cy="100" r="4"/>
+            <circle
+              className="stroke-1 stroke-neutral-900 fill-sky-600"
+              r="4"
+              cx={100 - 80 * Math.sin(2 * Math.PI * state.azimuth) * Math.cos(2 * Math.PI * state.elevation)}
+              cy={100 - 80 * Math.cos(2 * Math.PI * state.azimuth) * Math.cos(2 * Math.PI * state.elevation)} />
+          </svg>
+          <svg className="flex-1" viewBox="0 0 200 200">
+            <text className="font-base text-neutral-900 text-xs" x="20" y="20">XZ</text>
+            <circle className="stroke-1 stroke-neutral-900 fill-none" cx="100" cy="100" r="20"/>
+            <circle className="stroke-1 stroke-neutral-900 fill-none" cx="100" cy="100" r="50"/>
+            <circle className="stroke-1 stroke-neutral-900 fill-none" cx="100" cy="100" r="80"/>
+            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="100" cy="20" r="4"/>
+            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="100" cy="180" r="4"/>
+            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="20" cy="100" r="4"/>
+            <circle className="stroke-1 stroke-neutral-900 fill-neutral-900" cx="180" cy="100" r="4"/>
+            <circle
+              className="stroke-1 stroke-neutral-900 fill-sky-600"
+              r="4"
+              cx={100 + 80 * Math.cos(2 * Math.PI * state.elevation) * Math.sin(2 * Math.PI * state.azimuth)}
+              cy={100 - 80 * Math.sin(2 * Math.PI * state.elevation)} />
+          </svg>
+        </div>
         <div className="flex-1">
           <Dropdown
             className="my-2"
