@@ -6,7 +6,7 @@ import OfflineRenderer from '@elemaudio/offline-renderer';
 
 import { readFileSync, writeFileSync } from 'fs';
 import { program } from 'commander';
-import { defineTransform, decodeAudioData, enc } from './transform.js';
+import { defineTransform, enc } from './transform.js';
 import { bitcrush } from './effects/bitcrush.js';
 import { distortion } from './effects/distortion.js';
 import { delay } from './effects/delay.js';
@@ -106,6 +106,22 @@ function checkPosition(pos) {
   invariant(typeof pos.azimuth === 'number', 'Position object must specify an azimuth value in degrees.');
   invariant(typeof pos.elevation === 'number', 'Position object must specify an elevation value in degrees.');
   invariant(typeof pos.influence === 'number', 'Position object must specify an influence value in degrees.');
+}
+
+// A quick helper function for reading wav files into Float32Array buffers
+function decodeAudioData(path) {
+  const wav = new WaveFile(readFileSync(path));
+  const bitRate = wav.fmt.bitsPerSample;
+  const sampleRate = wav.fmt.sampleRate;
+  const channelData = wav.getSamples().map(function(chan) {
+    return Float32Array.from(chan, x => x / (2 ** (bitRate - 1)));
+  });
+
+  return {
+    bitRate,
+    sampleRate,
+    channelData,
+  };
 }
 
 // Our main transform function.
