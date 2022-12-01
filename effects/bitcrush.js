@@ -17,8 +17,10 @@ export function bitcrush(props, input) {
   let round = (x) => el.floor(el.add(0.5, x));
 
   if (hasKey) {
-    quant = el.sm(el.const({key: `${props.key}:quant`, value: quant}));
-    dequant = el.sm(el.const({key: `${props.key}:dequant`, value: dequant}));
+    // Careful not to smooth these constants to ensure that the gain relationship stays perfect,
+    // otherwise we leave the door open for potential big spikes when dragging a slider.
+    quant = el.const({key: `${props.key}:quant`, value: quant});
+    dequant = el.const({key: `${props.key}:dequant`, value: dequant});
   }
 
   return el.mul(dequant, round(el.mul(quant, input)));
