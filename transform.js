@@ -3,6 +3,25 @@ import * as jshlib from 'spherical-harmonic-transform';
 import { el } from '@elemaudio/core';
 
 
+// Evaluate the nth Legendre polynomial at x using Bonnet's
+// recursion formula
+//
+// We're not actually using this for the first order case (see the
+// decoder function comments on the maxRE weighting), but I'll leave
+// it in in anticipation of future work extending this project to higher
+// order ambisonics.
+function P(n, x) {
+  if (n === 0)
+    return 1;
+  if (n === 1)
+    return x;
+
+  const n1 = ((2 * n) - 1) * x * P(n - 1, x);
+  const n2 = (n - 1) * P(n - 2, x);
+
+  return (n1 - n2) / n;
+}
+
 // This function encodes a mono point source with a given azimuth and
 // elevation into an Nth order HOA channel array.
 //
@@ -18,9 +37,12 @@ export function ambipan(normType, order, azim, elev, xn) {
     let gain = g[0];
 
     // By default, the spherical harmonic transform library here yields coefficients
-    // normalized in N3D. If the user asking for SN3D we convert here.
-    if (normType === "sn3d") {
-      gain = gain / Math.sqrt(2 * i + 1);
+    // normalized in N3D. If the user asking for SN3D we convert here by scaling
+    // the directional components of the output signal
+    //
+    // NOTE: This scaling is correct only for first order ambisonic encoding.
+    if ((i > 0) && normType === "sn3d") {
+      gain = gain / Math.sqrt(3);
     }
 
     return el.mul(gain, xn);
@@ -38,28 +60,55 @@ export function zip(a, b) {
 // Decode from First Order Ambisonics to a series of virtual mic signals
 // using a simple SAD decoder.
 export function decode(normType, pos, w, y, z, x) {
-  // Map to radians
-  const posRad = pos.map(([a, e]) => [a * Math.PI / 180, e * Math.PI / 180]);
+  let chans = [w, y, z, x];
 
-  // Decoding:
-  //
-  // P_n = W + sqrt(3) * (X * cos(theta_n) * cos(phi_n) + Y * sin(theta_n) * cos(phi_n) + Z * sin(phi_n))
-  //
-  // For N3D input normalization, we need to scale the first-order components here
-  // by sqrt(3). For SN3D input normalization, we need an additional sqrt(3) factor.
-  const normFactor = (normType === "sn3d") ? Math.sqrt(3) * Math.sqrt(3) : Math.sqrt(3);
+  // The literature for encoding and decoding generally keeps everything in N3D,
+  // so if we receive SN3D we first convert back to N3D by scaling the directional
+  // components of the input signal
+  if (normType === "sn3d") {
+    chans = [
+      w,
+      el.mul(Math.sqrt(3), y),
+      el.mul(Math.sqrt(3), z),
+      el.mul(Math.sqrt(3), x),
+    ];
+  }
 
-  return posRad.map(([azim, elev]) => (
-    el.mul(
-      1 / posRad.length,
-      el.add(
-        w,
-        el.mul(normFactor, x, Math.cos(azim), Math.cos(elev)),
-        el.mul(normFactor, y, Math.sin(azim), Math.cos(elev)),
-        el.mul(normFactor, z, Math.sin(elev)),
-      ),
-    )
-  ));
+  return pos.map(([azim, elev]) => {
+    let gains = jshlib.computeRealSH(1, [
+      [azim * Math.PI / 180, elev * Math.PI / 180],
+    ]);
+
+    // Max rE weighting for the first-order directional components
+    //
+    // We would normally use P_i(x) where x is the cos approximation below,
+    // but P_0(x) == 1 so our omni component (w) stays at unity gain, then
+    // we have P_1(x) == x, so for these first order directional components (y, z, x)
+    // we can simply evaluate the cos approximation and apply it below.
+    //
+    // See:
+    // * https://github.com/polarch/Higher-Order-Ambisonics/blob/master/getMaxREweights.m#L26
+    let re = Math.cos(137.9 * Math.PI / 180 / (1 + 1.51));
+
+    return el.mul(
+      // The literature suggests a (4*Pi/L) scaling factor, but since we know that we're going to re-encode
+      // to B-Format right after the intermediate transformation, we're seeking a decoding/encoding matrix
+      // pair with A * A^T == I. So we adjust the weighting here just to (1/L) in an effort to maximally
+      // preserve the original input signal through the transformation.
+      //
+      // See:
+      //  * https://www.aes.org/tmpFiles/elib/20221128/16554.pdf
+      //  * https://www.aes.org/e-lib/browse.cfm?elib=16554
+      1 / pos.length,
+      el.add(...gains.map(function(g, j) {
+        if (j > 0) {
+          return el.mul(g[0] * re, chans[j]);
+        }
+
+        return el.mul(g[0], chans[j]);
+      })),
+    );
+  });
 }
 
 // Encodes a set of processed virtual mic signals back into FOA B-Format
@@ -81,21 +130,6 @@ export function encode(normType, pos, inputs) {
       el.add(ax, nx),
     ]
   }, [0, 0, 0, 0]);
-}
-
-// Polar coordinate to cartesian coordinate helper
-function pol2car ([theta, phi]) {
-  let radius = 1; // unit circle
-  let x = radius * Math.cos(theta * Math.PI / 180);
-  let y = radius * Math.sin(theta * Math.PI / 180);
-  let z = radius * Math.sin(phi * Math.PI / 180);
-
-  return [x, y, z];
-}
-
-// Euclidean distance helper
-function distance([x1, y1, z1], [x2, y2, z2]) {
-  return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1));
 }
 
 export function defineTransform(normType, position, effect, inTaps) {
