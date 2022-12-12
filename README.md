@@ -151,7 +151,7 @@ Project team:
 
 This project is supported in part by an award from the [National Endowment for the Arts](https://www.arts.gov/). To find out more about how National Endowment for the Arts grants impact individuals and communities, visit [www.arts.gov](https://www.arts.gov/).
 
-<img src="https://user-images.githubusercontent.com/2341558/177417763-76e30845-6f6f-4be8-9ea8-ba6970576a9f.png" width="200"> &nbsp; &nbsp; <img src="https://user-images.githubusercontent.com/2341558/177416958-a69de91b-631a-4f87-a323-66215937c98d.png" width="190">
+<img src="https://user-images.githubusercontent.com/2341558/177417763-76e30845-6f6f-4be8-9ea8-ba6970576a9f.png" width="200"> &nbsp; &nbsp; <img src="https://user-images.githubusercontent.com/2341558/207156722-95ff666a-beef-4c8d-8964-cf074f8f1b78.png" width="190">
 
 ## License
 
