@@ -4,9 +4,10 @@ import invariant from 'invariant';
 import wavefile from 'wavefile';
 import OfflineRenderer from '@elemaudio/offline-renderer';
 
+import { el } from '@elemaudio/core';
 import { readFileSync, writeFileSync } from 'fs';
 import { program } from 'commander';
-import { defineTransform, enc } from './transform.js';
+import { defineTransform } from './transform.js';
 import { bitcrush } from './effects/bitcrush.js';
 import { distortion } from './effects/distortion.js';
 import { delay } from './effects/delay.js';
@@ -110,7 +111,7 @@ function checkPosition(pos) {
 
 // A quick helper function for reading wav files into Float32Array buffers
 function decodeAudioData(path) {
-  const wav = new WaveFile(readFileSync(path));
+  const wav = new wavefile.WaveFile(readFileSync(path));
   const bitRate = wav.fmt.bitsPerSample;
   const sampleRate = wav.fmt.sampleRate;
   const channelData = wav.getSamples().map(function(chan) {
