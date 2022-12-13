@@ -1,26 +1,25 @@
-import wavefile from 'wavefile';
-import { readFileSync, writeFileSync } from 'fs';
-
 import * as jshlib from 'spherical-harmonic-transform';
 
-import OfflineRenderer from '@elemaudio/offline-renderer';
 import { el } from '@elemaudio/core';
 
 
-// A quick helper function for reading wav files into Float32Array buffers
-export function decodeAudioData(path) {
-  const wav = new wavefile.WaveFile(readFileSync(path));
-  const bitRate = wav.fmt.bitsPerSample;
-  const sampleRate = wav.fmt.sampleRate;
-  const channelData = wav.getSamples().map(function(chan) {
-    return Float32Array.from(chan, x => x / (2 ** (bitRate - 1)));
-  });
+// Evaluate the nth Legendre polynomial at x using Bonnet's
+// recursion formula
+//
+// We're not actually using this for the first order case (see the
+// decoder function comments on the maxRE weighting), but I'll leave
+// it in in anticipation of future work extending this project to higher
+// order ambisonics.
+function P(n, x) {
+  if (n === 0)
+    return 1;
+  if (n === 1)
+    return x;
 
-  return {
-    bitRate,
-    sampleRate,
-    channelData,
-  };
+  const n1 = ((2 * n) - 1) * x * P(n - 1, x);
+  const n2 = (n - 1) * P(n - 2, x);
+
+  return (n1 - n2) / n;
 }
 
 // This function encodes a mono point source with a given azimuth and
@@ -38,9 +37,12 @@ export function ambipan(normType, order, azim, elev, xn) {
     let gain = g[0];
 
     // By default, the spherical harmonic transform library here yields coefficients
-    // normalized in N3D. If the user asking for SN3D we convert here.
-    if (normType === "sn3d") {
-      gain = gain / Math.sqrt(2 * i + 1);
+    // normalized in N3D. If the user asking for SN3D we convert here by scaling
+    // the directional components of the output signal
+    //
+    // NOTE: This scaling is correct only for first order ambisonic encoding.
+    if ((i > 0) && normType === "sn3d") {
+      gain = gain / Math.sqrt(3);
     }
 
     return el.mul(gain, xn);
@@ -58,28 +60,55 @@ export function zip(a, b) {
 // Decode from First Order Ambisonics to a series of virtual mic signals
 // using a simple SAD decoder.
 export function decode(normType, pos, w, y, z, x) {
-  // Map to radians
-  const posRad = pos.map(([a, e]) => [a * Math.PI / 180, e * Math.PI / 180]);
+  let chans = [w, y, z, x];
 
-  // Decoding:
-  //
-  // P_n = W + sqrt(3) * (X * cos(theta_n) * cos(phi_n) + Y * sin(theta_n) * cos(phi_n) + Z * sin(phi_n))
-  //
-  // For N3D input normalization, we need to scale the first-order components here
-  // by sqrt(3). For SN3D input normalization, we need an additional sqrt(3) factor.
-  const normFactor = (normType === "sn3d") ? Math.sqrt(3) * Math.sqrt(3) : Math.sqrt(3);
+  // The literature for encoding and decoding generally keeps everything in N3D,
+  // so if we receive SN3D we first convert back to N3D by scaling the directional
+  // components of the input signal
+  if (normType === "sn3d") {
+    chans = [
+      w,
+      el.mul(Math.sqrt(3), y),
+      el.mul(Math.sqrt(3), z),
+      el.mul(Math.sqrt(3), x),
+    ];
+  }
 
-  return posRad.map(([azim, elev]) => (
-    el.mul(
-      1 / posRad.length,
-      el.add(
-        w,
-        el.mul(normFactor, x, Math.cos(azim), Math.cos(elev)),
-        el.mul(normFactor, y, Math.sin(azim), Math.cos(elev)),
-        el.mul(normFactor, z, Math.sin(elev)),
-      ),
-    )
-  ));
+  return pos.map(([azim, elev]) => {
+    let gains = jshlib.computeRealSH(1, [
+      [azim * Math.PI / 180, elev * Math.PI / 180],
+    ]);
+
+    // Max rE weighting for the first-order directional components
+    //
+    // We would normally use P_i(x) where x is the cos approximation below,
+    // but P_0(x) == 1 so our omni component (w) stays at unity gain, then
+    // we have P_1(x) == x, so for these first order directional components (y, z, x)
+    // we can simply evaluate the cos approximation and apply it below.
+    //
+    // See:
+    // * https://github.com/polarch/Higher-Order-Ambisonics/blob/master/getMaxREweights.m#L26
+    let re = Math.cos(137.9 * Math.PI / 180 / (1 + 1.51));
+
+    return el.mul(
+      // The literature suggests a (4*Pi/L) scaling factor, but since we know that we're going to re-encode
+      // to B-Format right after the intermediate transformation, we're seeking a decoding/encoding matrix
+      // pair with A * A^T == I. So we adjust the weighting here just to (1/L) in an effort to maximally
+      // preserve the original input signal through the transformation.
+      //
+      // See:
+      //  * https://www.aes.org/tmpFiles/elib/20221128/16554.pdf
+      //  * https://www.aes.org/e-lib/browse.cfm?elib=16554
+      1 / pos.length,
+      el.add(...gains.map(function(g, j) {
+        if (j > 0) {
+          return el.mul(g[0] * re, chans[j]);
+        }
+
+        return el.mul(g[0], chans[j]);
+      })),
+    );
+  });
 }
 
 // Encodes a set of processed virtual mic signals back into FOA B-Format
@@ -103,86 +132,49 @@ export function encode(normType, pos, inputs) {
   }, [0, 0, 0, 0]);
 }
 
-// Polar coordinate to cartesian coordinate helper
-function pol2car ([theta, phi]) {
-  let radius = 1; // unit circle
-  let x = radius * Math.cos(theta * Math.PI / 180);
-  let y = radius * Math.sin(theta * Math.PI / 180);
-  let z = radius * Math.sin(phi * Math.PI / 180);
-
-  return [x, y, z];
-}
-
-// Euclidean distance helper
-function distance([x1, y1, z1], [x2, y2, z2]) {
-  return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1));
-}
-
-// Our main transform function.
-//
-// Takes an input file, an effect function, and a desired output
-// path for the resulting wav file.
-//
-// The effect function is an Elementary function which receives
-// an input channel, performs some process over it, and returns
-// the output. This function should operate over a single channel.
-//
-// The position is an object specifying azimuth, elevation, and influence
-// relating to the effect. The effect is 100% wet at the specified position
-// in the virtual sphere, and 100% dry outside of the sphere of influence around
-// that point. The sphere of influence is specified by the influence property
-// which defines the radius of the sphere. The virtual sphere in which the sphere
-// of influence sits is defined as a unit sphere.
-export async function transform(inputFile, normType, position, effect, outputPath) {
-  let core = new OfflineRenderer();
-  let inputData = decodeAudioData(inputFile);
-  let outputWav = new wavefile.WaveFile();
-
-  await core.initialize({
-    numInputChannels: inputData.channelData.length,
-    numOutputChannels: inputData.channelData.length,
-    sampleRate: inputData.sampleRate,
-  });
-
-  // Our sample data for processing.
-  let inps = inputData.channelData;
-  let outs = Array.from({length: inps.length}).map(_ => new Float32Array(inps[0].length));;
-
-  // Our processing transformation
-  //
-  // For first order processing, we're just using the spatial positions of a
-  // default octahedron decoder. These are [azim, elev] pairs in degrees.
+export function defineTransform(normType, position, effect, dryLevel, inTaps) {
   const pos = [ [0, 0], [90, 0], [180, 0], [270, 0], [0, 90], [0, -90] ];
-  const inTaps = inps.map((x, i) => el.in({channel: i}));
+  const deg2rad = (deg) => deg * Math.PI / 180;
 
-  core.render(...encode(normType, pos, decode(normType, pos, ...inTaps).map((vMicSignal, i) => {
+  const cosAzim = Math.cos(deg2rad(position.azimuth));
+  const sinAzim = Math.sin(deg2rad(position.azimuth));
+  const cosElev = Math.cos(deg2rad(position.elevation));
+  const sinElev = Math.sin(deg2rad(position.elevation));
+
+  const db2gain = (db) => Math.pow(10, db / 20);
+  const dryGain = el.const({key: 'dryGain', value: db2gain(Math.min(0, Math.max(-96, dryLevel)))});
+
+  return encode(normType, pos, decode(normType, pos, ...inTaps).map((vMicSignal, i) => {
     let wet = effect(vMicSignal);
     let dry = vMicSignal;
-    let d = distance(pol2car(pos[i]), pol2car([position.azimuth, position.elevation]));
+    let key = `mix:${pos[i][0]}:${pos[i][1]}`;
+    let mix = 0;
 
-    let influence = Math.max(0, Math.min(1, position.influence));
-    let maxScaledInfluence = Math.sqrt(2) * 2;
-    let minScaledInfluence = 0.8;
-    let scaledInfluence = minScaledInfluence + influence * (maxScaledInfluence - minScaledInfluence);
-
-    // If this particular mic signal is within the influence region, we mix according
-    // to distance between the mic signal and the effect position
-    if (d < scaledInfluence) {
-      let mix = 1.0 - 0.95 * (d / scaledInfluence);
-      return el.select(mix, wet, dry);
+    // This is roughly a sine panning law adapted for three dimensional space,
+    // using both azimuth and elevation to derive a gain coefficient
+    switch (key) {
+      case 'mix:0:0':
+        mix = cosElev * cosAzim;
+        break;
+      case 'mix:90:0':
+        mix = cosElev * sinAzim;
+        break;
+      case 'mix:180:0':
+        mix = -1 * cosElev * cosAzim;
+        break;
+      case 'mix:270:0':
+        mix = -1 * cosElev * sinAzim;
+        break;
+      case 'mix:0:90':
+        mix = sinElev;
+        break;
+      case 'mix:0:-90':
+        mix = -1 * sinElev;
+        break;
     }
 
-    return dry;
-  })));
-
-  // Pushing samples through the graph
-  core.process(inps, outs);
-
-  // Fill our output wav buffer with the process data and write to disk.
-  // Here we convert back to 16-bit PCM before write.
-  outputWav.fromScratch(inps.length, inputData.sampleRate, '16', outs.map((chan) => {
-    return Int16Array.from(chan, x => x * (2 ** 15));
+    // Prevent phase inversion
+    mix = Math.max(0, mix);
+    return el.select(el.sm(el.const({key, value: mix})), wet, el.mul(dryGain, dry));
   }));
-
-  writeFileSync(outputPath, outputWav.toBuffer());
 }

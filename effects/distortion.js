@@ -12,6 +12,20 @@ export function distortion(props, input) {
   let outputGain = db2gain(Math.max(-32, Math.min(32, props.outputGain)));
   let env = el.env(el.tau2pole(0.01), el.tau2pole(0.01), input);
 
+  // A quick trick for "close enough" gain compensation here
+  if (inputGain > 0) {
+    outputGain *= db2gain(-0.5 * Math.max(-32, Math.min(32, props.inputGain)));
+  }
+
+  const hasKey = props.hasOwnProperty('key') &&
+    typeof props.key === 'string' &&
+    props.key.length > 0;
+
+  if (hasKey) {
+    inputGain = el.sm(el.const({key: `${props.key}:ig`, value: inputGain}));
+    outputGain = el.sm(el.const({key: `${props.key}:og`, value: outputGain}));
+  }
+
   return el.dcblock(
     el.mul(
       outputGain,

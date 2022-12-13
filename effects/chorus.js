@@ -6,11 +6,20 @@ function ChorusComposite({props, context, children}) {
   let sr = context.sampleRate;
   let input = children[0];
   let rate = Math.max(0, Math.min(20000, props.rate));
-  let depth = Math.max(10, Math.min(100, props.depth));
+  let depth = Math.max(10, Math.min(40, props.depth));
+
+  const hasKey = props.hasOwnProperty('key') &&
+    typeof props.key === 'string' &&
+    props.key.length > 0;
+
+  if (hasKey) {
+    rate = el.sm(el.const({key: `${props.key}:rate`, value: rate}));
+    depth = el.sm(el.const({key: `${props.key}:depth`, value: depth}));
+  }
 
   return el.delay(
-    {size: sr * (20 + depth / 2) / 1000},
-    el.ms2samps(el.add(20, depth / 2, el.mul(depth / 2, el.triangle(rate)))),
+    {size: sr * 30 / 1000},
+    el.ms2samps(el.add(20, el.mul(depth, 0.5), el.mul(0.5, depth, el.triangle(rate)))),
     0,
     input,
   );

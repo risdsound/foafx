@@ -10,9 +10,19 @@ function FlangerComposite({props, context, children}) {
   let feedback = Math.max(-0.999, Math.min(0.999, props.feedback));
   let depth = Math.max(1, Math.min(20, props.depth));
 
+  const hasKey = props.hasOwnProperty('key') &&
+    typeof props.key === 'string' &&
+    props.key.length > 0;
+
+  if (hasKey) {
+    rate = el.sm(el.const({key: `${props.key}:rate`, value: rate}));
+    feedback = el.sm(el.const({key: `${props.key}:feedback`, value: feedback}));
+    depth = el.sm(el.const({key: `${props.key}:depth`, value: depth}));
+  }
+
   return el.delay(
-    {size: sr * depth / 1000},
-    el.ms2samps(el.add(depth / 2, el.mul(depth / 2, el.triangle(rate)))),
+    {size: sr * 21 / 1000},
+    el.ms2samps(el.add(el.mul(depth, 0.5), el.mul(0.5, depth, el.triangle(rate)))),
     feedback,
     input,
   );
