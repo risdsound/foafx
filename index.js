@@ -17,12 +17,12 @@ import { gain } from './effects/gain.js';
 
 
 const defaults = {
+  dryLevel: 0,
   bitcrush: {
     bitDepth: 5,
     position: {
       azimuth: 0,
       elevation: 0,
-      influence: 0.5,
     },
   },
   distortion: {
@@ -31,7 +31,6 @@ const defaults = {
     position: {
       azimuth: 0,
       elevation: 0,
-      influence: 0.5,
     },
   },
   delay: {
@@ -40,7 +39,6 @@ const defaults = {
     position: {
       azimuth: 90,
       elevation: 0,
-      influence: 0.5,
     },
   },
   flanger: {
@@ -50,7 +48,6 @@ const defaults = {
     position: {
       azimuth: -90,
       elevation: 0,
-      influence: 0.5,
     },
   },
   chorus: {
@@ -59,7 +56,6 @@ const defaults = {
     position: {
       azimuth: -90,
       elevation: 0,
-      influence: 0.5,
     },
   },
   gain: {
@@ -67,7 +63,6 @@ const defaults = {
     position: {
       azimuth: 0,
       elevation: 0,
-      influence: 0.5,
     },
   },
 };
@@ -106,7 +101,6 @@ function checkPosition(pos) {
   invariant(typeof pos === 'object', 'Position object must be specified in the config file.');
   invariant(typeof pos.azimuth === 'number', 'Position object must specify an azimuth value in degrees.');
   invariant(typeof pos.elevation === 'number', 'Position object must specify an elevation value in degrees.');
-  invariant(typeof pos.influence === 'number', 'Position object must specify an influence value in degrees.');
 }
 
 // A quick helper function for reading wav files into Float32Array buffers
@@ -134,13 +128,11 @@ function decodeAudioData(path) {
 // an input channel, performs some process over it, and returns
 // the output. This function should operate over a single channel.
 //
-// The position is an object specifying azimuth, elevation, and influence
-// relating to the effect. The effect is 100% wet at the specified position
-// in the virtual sphere, and 100% dry outside of the sphere of influence around
-// that point. The sphere of influence is specified by the influence property
-// which defines the radius of the sphere. The virtual sphere in which the sphere
-// of influence sits is defined as a unit sphere.
-export async function transform(inputFile, normType, position, effect, outputPath) {
+// The position is an object specifying the azimuth and elevation of
+// the given effect. The effect is 100% wet at the specified position
+// in the virtual sphere, and follows roughly a sine panning law between
+// the nearby virtual microphones.
+export async function transform(inputFile, normType, position, dryLevel, effect, outputPath) {
   let core = new OfflineRenderer();
   let inputData = decodeAudioData(inputFile);
   let outputWav = new wavefile.WaveFile();
@@ -162,7 +154,7 @@ export async function transform(inputFile, normType, position, effect, outputPat
   const pos = [ [0, 0], [90, 0], [180, 0], [270, 0], [0, 90], [0, -90] ];
   const inTaps = inps.map((x, i) => el.in({channel: i}));
 
-  core.render(...defineTransform(normType, position, effect, inTaps));
+  core.render(...defineTransform(normType, position, effect, dryLevel, inTaps));
 
   // Pushing samples through the graph
   core.process(inps, outs);
@@ -189,10 +181,11 @@ program
     const config = loadConfig(program.opts());
     const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.bitcrush;
+    const { dryLevel } = config;
 
     try {
       checkPosition(position);
-      await transform(inputFile, normType, position, (x) => bitcrush(props, x), outputPath);
+      await transform(inputFile, normType, position, dryLevel, (x) => bitcrush(props, x), outputPath);
     } catch (e) {
       console.error('Error:', e.message);
       process.exit(1);
@@ -210,10 +203,11 @@ program
     const config = loadConfig(program.opts());
     const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.distortion;
+    const { dryLevel } = config;
 
     try {
       checkPosition(position);
-      await transform(inputFile, normType, position, (x) => distortion(props, x), outputPath);
+      await transform(inputFile, normType, position, dryLevel, (x) => distortion(props, x), outputPath);
     } catch (e) {
       console.error('Error:', e.message);
       process.exit(1);
@@ -231,10 +225,11 @@ program
     const config = loadConfig(program.opts());
     const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.delay;
+    const { dryLevel } = config;
 
     try {
       checkPosition(position);
-      await transform(inputFile, normType, position, (x) => delay(props, x), outputPath);
+      await transform(inputFile, normType, position, dryLevel, (x) => delay(props, x), outputPath);
     } catch (e) {
       console.error('Error:', e.message);
       process.exit(1);
@@ -252,10 +247,11 @@ program
     const config = loadConfig(program.opts());
     const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.flanger;
+    const { dryLevel } = config;
 
     try {
       checkPosition(position);
-      await transform(inputFile, normType, position, (x) => flanger(props, x), outputPath);
+      await transform(inputFile, normType, position, dryLevel, (x) => flanger(props, x), outputPath);
     } catch (e) {
       console.error('Error:', e.message);
       process.exit(1);
@@ -273,10 +269,11 @@ program
     const config = loadConfig(program.opts());
     const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.chorus;
+    const { dryLevel } = config;
 
     try {
       checkPosition(position);
-      await transform(inputFile, normType, position, (x) => chorus(props, x), outputPath);
+      await transform(inputFile, normType, position, dryLevel, (x) => chorus(props, x), outputPath);
     } catch (e) {
       console.error('Error:', e.message);
       process.exit(1);
@@ -294,10 +291,11 @@ program
     const config = loadConfig(program.opts());
     const normType = loadNormalizationType(program.opts());
     const { position, ...props } = config.gain;
+    const { dryLevel } = config;
 
     try {
       checkPosition(position);
-      await transform(inputFile, normType, position, (x) => gain(props, x), outputPath);
+      await transform(inputFile, normType, position, dryLevel, (x) => gain(props, x), outputPath);
     } catch (e) {
       console.error(e);
       process.exit(1);
