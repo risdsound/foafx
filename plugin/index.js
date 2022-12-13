@@ -30,7 +30,6 @@ const effects = [
 // Initial state management
 const store = createStore(() => {
   return {
-    influence: Math.sqrt(2) / 2,
     effectId: 1,
     ...manifest.parameters.reduce((acc, param) => {
       return Object.assign(acc, {
@@ -58,6 +57,7 @@ function pct(x) {
 }
 
 const valueMapFns = {
+  dryLevel: (x) => linscale(x, 0, 1, -96, 0),
   gain: (x) => linscale(x, 0, 1, -96, 12),
   bitDepth: (x) => linscale(x, 0, 1, 3, 16),
   chorusRate: (x) => logscale(x, 0, 1, 0.001, 10),
@@ -72,6 +72,7 @@ const valueMapFns = {
 };
 
 const valueReadoutFns = {
+  dryLevel: (x) => `${valueMapFns.dryLevel(x).toFixed(1)}dB`,
   gain: (x) => `${valueMapFns.gain(x).toFixed(1)}dB`,
   bitDepth: (x) => `${Math.round(valueMapFns.bitDepth(x))}`,
   chorusRate: (x) => `${valueMapFns.chorusRate(x).toFixed(1)}Hz`,
@@ -85,7 +86,6 @@ const valueReadoutFns = {
   delayFeedback: (x) => pct(valueMapFns.delayFeedback(x)),
   azimuth: (x) => `${(360 * x).toFixed(1)}deg`,
   elevation: (x) => `${(360 * x).toFixed(1)}deg`,
-  influence: (x) => x.toFixed(1),
 };
 
 // Audio effect helper
@@ -139,12 +139,12 @@ function renderFromStoreState(state) {
   const position = {
     azimuth: 360 * state.azimuth,
     elevation: 360 * state.elevation,
-    influence: state.influence,
   };
 
+  const dryLevel = valueMapFns.dryLevel(state.dryLevel);
   const effect = getEffectDefinition(state);
 
-  console.log(core.render(...defineTransform('sn3d', position, effect, [
+  console.log(core.render(...defineTransform('sn3d', position, effect, dryLevel, [
     el.in({channel: 0}),
     el.in({channel: 1}),
     el.in({channel: 2}),

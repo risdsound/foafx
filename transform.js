@@ -132,7 +132,7 @@ export function encode(normType, pos, inputs) {
   }, [0, 0, 0, 0]);
 }
 
-export function defineTransform(normType, position, effect, inTaps) {
+export function defineTransform(normType, position, effect, dryLevel, inTaps) {
   const pos = [ [0, 0], [90, 0], [180, 0], [270, 0], [0, 90], [0, -90] ];
   const deg2rad = (deg) => deg * Math.PI / 180;
 
@@ -140,6 +140,9 @@ export function defineTransform(normType, position, effect, inTaps) {
   const sinAzim = Math.sin(deg2rad(position.azimuth));
   const cosElev = Math.cos(deg2rad(position.elevation));
   const sinElev = Math.sin(deg2rad(position.elevation));
+
+  const db2gain = (db) => Math.pow(10, db / 20);
+  const dryGain = el.const({key: 'dryGain', value: db2gain(Math.min(0, Math.max(-96, dryLevel)))});
 
   return encode(normType, pos, decode(normType, pos, ...inTaps).map((vMicSignal, i) => {
     let wet = effect(vMicSignal);
@@ -172,8 +175,6 @@ export function defineTransform(normType, position, effect, inTaps) {
 
     // Prevent phase inversion
     mix = Math.max(0, mix);
-
-    console.log(key, mix);
-    return el.select(el.sm(el.const({key, value: mix})), wet, dry);
+    return el.select(el.sm(el.const({key, value: mix})), wet, el.mul(dryGain, dry));
   }));
 }
