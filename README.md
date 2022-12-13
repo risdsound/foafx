@@ -6,7 +6,7 @@ As its input, **foafx** expects a B-format, 4-channel first order ambisonic enco
 
 In order to apply a chosen effect, **foafx** decodes the B-format file using a simple Sampling Ambisonic Decoder (SAD) into an octahedral arrangement with six vertices that represent virtual microphone positions.  Then, the effect is applied with the specified parameters including its spatial position (azimuth and elevation).  After effect processing, the six signals are encoded back to B-format, panned to the matching octahedral positions of the decoder, and rendered to an output file.  The result is an ambisonic wet/dry effect mix with wet focussed in a specific area of the sound field.
 
-Because **foafx** impacts a region of the sound field, based on azimuth, elevation, and influence parameters, multiple processing passes may be required to achieve a fully encompassing effect, which with varied parameters can yield compelling results that interact with the spatial aspects of the source file.  With this in mind, there are six regions of consequence based on the octahedral decoder. In azimuth/elevation pairs (in degrees) these are:
+Because **foafx** impacts a region of the sound field, based on the azimuth and elevation parameters, multiple processing passes may be required to achieve a fully encompassing effect, which with varied parameters can yield compelling results that interact with the spatial aspects of the source file.  With this in mind, there are six regions of consequence based on the octahedral decoder. In azimuth/elevation pairs (in degrees) these are:
 
 [0, 0], [90, 0], [180, 0], [270, 0], [0, 90], [0, -90]
 
@@ -15,6 +15,11 @@ FRONT, LEFT, BACK, RIGHT, UP, DOWN
 By running an effect (or different effects) consecutively at each of these or equidistant coordinates, the entire sound field will be altered.
 
 ## Installation
+
+**foafx** is a [Node.js](https://nodejs.org/en/) program distributed on npm. Therefore, before installing **foafx** you must first install Node.js, for which
+we recommend [nvm](https://github.com/nvm-sh/nvm).
+
+With Node.js installed, you can install **foafx** as a global command line tool as follows,
 
 ```bash
 npm install -g foafx
@@ -42,11 +47,16 @@ Commands:
 
 ## Parameter ranges
 
+### Global
+
+* `dryLevel`, in Decibels – Default 0, Min -96, Max 0
+    * Setting dryLevel below 0dB allows you to attenuate the dry signal in those regions of the sphere where
+      the desired effect is not located, allowing for something of a "spotlight" effect.
+
 ### Position
 
 * `azimuth`, in degrees
 * `elevation`, in degrees
-* `influence` in the range [0, 1]
 
 ### Effects
 
@@ -81,12 +91,12 @@ foafx bitcrush -n n3d -c config.json input.wav output.wav
 
 ```json
 {
+  "dryLevel": 0,
   "bitcrush": {
     "bitDepth": 5,
     "position": {
       "azimuth": 0,
-      "elevation": 0,
-      "influence": 0.5
+      "elevation": 0
     }
   },
   "distortion": {
@@ -94,8 +104,7 @@ foafx bitcrush -n n3d -c config.json input.wav output.wav
     "outputGain": -10,
     "position": {
       "azimuth": 0,
-      "elevation": 0,
-      "influence": 0.5
+      "elevation": 0
     }
   },
   "delay": {
@@ -103,8 +112,7 @@ foafx bitcrush -n n3d -c config.json input.wav output.wav
     "feedback": 0.8,
     "position": {
       "azimuth": 90,
-      "elevation": 0,
-      "influence": 0.5
+      "elevation": 0
     }
   },
   "flanger": {
@@ -113,8 +121,7 @@ foafx bitcrush -n n3d -c config.json input.wav output.wav
     "feedback": 0.4,
     "position": {
       "azimuth": -90,
-      "elevation": 0,
-      "influence": 0.5
+      "elevation": 0
     }
   },
   "chorus": {
@@ -122,27 +129,25 @@ foafx bitcrush -n n3d -c config.json input.wav output.wav
     "depth": 40,
     "position": {
       "azimuth": -90,
-      "elevation": 0,
-      "influence": 0.5
+      "elevation": 0
     }
   },
   "gain": {
     "gainDecibels": 0,
     "position": {
       "azimuth": 0,
-      "elevation": 0,
-      "influence": 0.5
+      "elevation": 0
     }
   }
 }
 ```
 
 
-## Credits 
+## Credits
 
 Created at the [Studio for Research in Sound and Technology ](https://sound.risd.edu) (SRST), Rhode Island School of Design (RISD)
 
-Project team: 
+Project team:
 * Shawn Greenlee, Faculty Lead
 * Nick Thompson, Elementary Audio LLC
 * Mark Araujo, Research Assistant
