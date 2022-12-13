@@ -76,7 +76,7 @@ Commands:
     * `rate` – Default 0.5Hz, Min 0, Max 20,000
     * `depth` – Default 40, Min 10, Max 100
 * Gain
-    * `gainDecibels` – Default 0dB, Min -32, Max 32
+    * `gainDecibels` – Default 0dB, Min -96, Max +12
 
 ## Sample config file
 

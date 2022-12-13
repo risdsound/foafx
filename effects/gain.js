@@ -6,7 +6,7 @@ export function gain(props, input) {
   invariant(typeof props === 'object' && typeof props.gainDecibels === 'number', 'gainDecibels must be specified as a number');
 
   let db2gain = (db) => Math.pow(10, db / 20);
-  let gain = db2gain(Math.max(-32, Math.min(32, props.gainDecibels)));
+  let gain = db2gain(Math.max(-96, Math.min(12, props.gainDecibels)));
 
   const hasKey = props.hasOwnProperty('key') &&
     typeof props.key === 'string' &&
