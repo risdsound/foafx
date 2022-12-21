@@ -4,7 +4,7 @@
 
 As its input, **foafx** expects a B-format, 4-channel first order ambisonic encoded file with ACN channel ordering.  It supports file normalization either in SN3D or N3D formats.
 
-In order to apply a chosen effect, **foafx** decodes the B-format file using a simple Sampling Ambisonic Decoder (SAD) into an octahedral arrangement with six vertices that represent virtual microphone positions.  Then, the effect is applied with the specified parameters including its spatial position (azimuth and elevation).  After effect processing, the six signals are encoded back to B-format, panned to the matching octahedral positions of the decoder, and rendered to an output file.  The result is an ambisonic wet/dry effect mix with wet focussed in a specific area of the sound field.
+In order to apply a chosen effect, **foafx** decodes the B-format file using a simple Sampling Ambisonic Decoder (SAD) with max_rE weighting into an octahedral arrangement with six vertices that represent virtual microphone positions.  Then, the effect is applied with the specified parameters including its spatial position (azimuth and elevation).  After effect processing, the six signals are encoded back to B-format, panned to the matching octahedral positions of the decoder, and rendered to an output file.  The result is an ambisonic wet/dry effect mix with wet focussed in a specific area of the sound field.
 
 Because **foafx** impacts a region of the sound field, based on the azimuth and elevation parameters, multiple processing passes may be required to achieve a fully encompassing effect, which with varied parameters can yield compelling results that interact with the spatial aspects of the source file.  With this in mind, there are six regions of consequence based on the octahedral decoder. In azimuth/elevation pairs (in degrees) these are:
 
@@ -12,18 +12,24 @@ Because **foafx** impacts a region of the sound field, based on the azimuth and 
 
 FRONT, LEFT, BACK, RIGHT, UP, DOWN
 
-By running an effect (or different effects) consecutively at each of these or equidistant coordinates, the entire sound field will be altered.
+By running an effect (or different effects) consecutively at each of these or equidistant coordinates, the entire sound field will be altered. 
 
 ## Installation
 
-**foafx** is a [Node.js](https://nodejs.org/en/) program distributed on npm. Therefore, before installing **foafx** you must first install Node.js, for which
-we recommend [nvm](https://github.com/nvm-sh/nvm).
+**foafx** is a [Node.js](https://nodejs.org/en/) program distributed on npm. Therefore, before installing **foafx** you must first install Node.js.
 
-With Node.js installed, you can install **foafx** as a global command line tool as follows,
+If you install Node.js with the installer available at [https://nodejs.org/en/download/] (https://nodejs.org/en/download/), you can install **foafx** as a global command line as follows, 
+
+```bash
+sudo npm install -g foafx
+```
+
+Alternatively, you can install Node.js with a package manager, for which we recommend [nvm](https://github.com/nvm-sh/nvm).  In this case, you can install **foafx** as a global command line tool as follows,
 
 ```bash
 npm install -g foafx
 ```
+
 
 ## Use
 
@@ -150,6 +156,7 @@ Created at the [Studio for Research in Sound and Technology ](https://sound.risd
 Project team:
 * Shawn Greenlee, Faculty Lead
 * Nick Thompson, Elementary Audio LLC
+* Alex Chechile, Research Fellow
 * Mark Araujo, Research Assistant
 * Caleb Shafer, Research Assistant
 * Femi Shonuga-Fleming, Research Assistant
