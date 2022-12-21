@@ -43,9 +43,9 @@ Options:
 
 Commands:
   bitcrush <inputFile> <outputPath>  Run the bitcrusher spatial audio effect over the input file
-  distort <inputFile> <outputPath>   Run the distortion spatial audio effect over the input file
+  distortion <inputFile> <outputPath>   Run the distortion spatial audio effect over the input file
   delay <inputFile> <outputPath>     Run the delay spatial audio effect over the input file
-  flange <inputFile> <outputPath>    Run the flanger spatial audio effect over the input file
+  flanger <inputFile> <outputPath>    Run the flanger spatial audio effect over the input file
   chorus <inputFile> <outputPath>    Run the chorus spatial audio effect over the input file
   gain <inputFile> <outputPath>      Run the gain spatial audio effect over the input file
   help [command]                     display help for command
@@ -90,6 +90,8 @@ A config file can be specified at the command line for providing parameter value
 effects and the position at which the effect should occur. The following example shows a config file
 with specifications for every available parameter for every available effect. The config file can be
 loaded at the command line using the `-c` flag.
+
+When entering a value with a decimal point, the syntax expects a 0 before the decimal, for example 0.5 instead of .5, or you will receive an error message when applying the effect.
 
 ```bash
 foafx bitcrush -n n3d -c config.json input.wav output.wav
@@ -163,7 +165,10 @@ Project team:
 
 This project is supported in part by an award from the [National Endowment for the Arts](https://www.arts.gov/). To find out more about how National Endowment for the Arts grants impact individuals and communities, visit [www.arts.gov](https://www.arts.gov/).
 
-<img src="https://user-images.githubusercontent.com/2341558/177417763-76e30845-6f6f-4be8-9ea8-ba6970576a9f.png" width="200"> &nbsp; &nbsp; <img src="https://user-images.githubusercontent.com/2341558/207156722-95ff666a-beef-4c8d-8964-cf074f8f1b78.png" width="190">
+<img src="https://user-images.githubusercontent.com/2341558/177417763-76e30845-6f6f-4be8-9ea8-ba6970576a9f.png" width="200"> &nbsp; &nbsp; <img src="https://user-images.githubusercontent.com/2341558/207156722-95ff666a-beef-4c8d-8964-cf074f8f1b78.png" width="190">&nbsp; &nbsp; <img src="https://user-images.githubusercontent.com/2341558/209012896-3a0407d7-7b91-4340-a004-f73dafc5857c.png" width="200">
+
+
+
 
 ## License
 
