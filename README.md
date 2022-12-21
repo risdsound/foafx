@@ -18,7 +18,7 @@ By running an effect (or different effects) consecutively at each of these or eq
 
 **foafx** is a [Node.js](https://nodejs.org/en/) program distributed on npm. Therefore, before installing **foafx** you must first install Node.js.
 
-If you install Node.js with the installer available at [https://nodejs.org/en/download/] (https://nodejs.org/en/download/), you can install **foafx** as a global command line as follows, 
+If you install Node.js with the installer available at [https://nodejs.org/en/download/](https://nodejs.org/en/download/), you can install **foafx** as a global command line as follows, 
 
 ```bash
 sudo npm install -g foafx
