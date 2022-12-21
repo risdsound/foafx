@@ -195,7 +195,7 @@ program
   });
 
 program
-  .command('distort <inputFile> <outputPath>')
+  .command('distortion <inputFile> <outputPath>')
   .description('Run the distortion spatial audio effect over the input file')
   .action(async (inputFile, outputPath) => {
     console.log(`Processing ${inputFile}...`);
@@ -239,7 +239,7 @@ program
   });
 
 program
-  .command('flange <inputFile> <outputPath>')
+  .command('flanger <inputFile> <outputPath>')
   .description('Run the flanger spatial audio effect over the input file')
   .action(async (inputFile, outputPath) => {
     console.log(`Processing ${inputFile}...`);
