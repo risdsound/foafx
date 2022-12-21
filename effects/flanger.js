@@ -6,9 +6,9 @@ function FlangerComposite({props, context, children}) {
   let sr = context.sampleRate;
   let input = children[0];
 
-  let rate = Math.max(0, Math.min(20000, props.rate));
+  let rate = Math.max(0.001, Math.min(4, props.rate));
   let feedback = Math.max(-0.999, Math.min(0.999, props.feedback));
-  let depth = Math.max(1, Math.min(20, props.depth));
+  let depth = Math.max(0.001, Math.min(7, props.depth));
 
   const hasKey = props.hasOwnProperty('key') &&
     typeof props.key === 'string' &&

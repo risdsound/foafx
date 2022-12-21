@@ -7,7 +7,7 @@ function DelayComposite({props, context, children}) {
   let input = children[0];
 
   let feedback = Math.max(0, Math.min(props.feedback, 0.999));
-  let delayTimeMs = Math.max(0, Math.min(10000, props.delayTime));
+  let delayTimeMs = Math.max(0.001, Math.min(5000, props.delayTime));
 
   const hasKey = props.hasOwnProperty('key') &&
     typeof props.key === 'string' &&

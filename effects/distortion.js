@@ -9,11 +9,11 @@ export function distortion(props, input) {
   let db2gain = (db) => Math.pow(10, db / 20);
 
   let inputGain = db2gain(Math.max(-32, Math.min(32, props.inputGain)));
-  let outputGain = db2gain(Math.max(-32, Math.min(32, props.outputGain)));
+  let outputGain = db2gain(Math.max(-12, Math.min(12, props.outputGain)));
   let env = el.env(el.tau2pole(0.01), el.tau2pole(0.01), input);
 
   // A quick trick for "close enough" gain compensation here
-  if (inputGain > 0) {
+  if (props.inputGain > 0) {
     outputGain *= db2gain(-0.5 * Math.max(-32, Math.min(32, props.inputGain)));
   }
 

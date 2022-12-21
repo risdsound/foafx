@@ -37,7 +37,7 @@ const defaults = {
     delayTime: 500,
     feedback: 0.8,
     position: {
-      azimuth: 90,
+      azimuth: 0,
       elevation: 0,
     },
   },
@@ -46,15 +46,15 @@ const defaults = {
     depth: 3.5,
     feedback: 0.4,
     position: {
-      azimuth: -90,
+      azimuth: 0,
       elevation: 0,
     },
   },
   chorus: {
     rate: 0.5,
-    depth: 40,
+    depth: 20,
     position: {
-      azimuth: -90,
+      azimuth: 0,
       elevation: 0,
     },
   },

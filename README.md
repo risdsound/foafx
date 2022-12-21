@@ -61,22 +61,22 @@ Commands:
 ### Effects
 
 * Bitcrush
-    * `bitDepth` – Default 5, Min 1, Max 16
+    * `bitDepth` – Default 5, Min 3, Max 16
 * Distortion
     * `inputGain` – Default 20, Min -32, Max 32
-    * `outputGain` – Default 20, Min -32, Max 32
+    * `outputGain` – Default -10, Min -12, Max 12
 * Delay
-    * `delayTime` – Default 500ms, Min 0, Max 10,000
+    * `delayTime` – Default 500ms, Min 0.001ms, Max 5000ms
     * `feedback` – Default 0.8, Min 0, Max 0.999
 * Flanger
-    * `rate` – Default 0.2Hz, Min 0, Max 20,000
-    * `depth` – Default 0.8, Min 1, Max 20
-    * `feedback` – Default 0.8, Min -0.999, Max 0.999
+    * `rate` – Default 0.2Hz, Min 0.001Hz, Max 4Hz
+    * `depth` – Default 3.5ms, Min 0.001ms, Max 7ms
+    * `feedback` – Default 0.4, Min -0.999, Max 0.999
 * Chorus
-    * `rate` – Default 0.5Hz, Min 0, Max 20,000
-    * `depth` – Default 40, Min 10, Max 100
+    * `rate` – Default 0.5Hz, Min 0.001Hz, Max 10Hz
+    * `depth` – Default 20ms, Min 10ms, Max 30ms
 * Gain
-    * `gainDecibels` – Default 0dB, Min -96, Max +12
+    * `gainDecibels` – Default 0dB, Min -96dB, Max +12dB
 
 ## Sample config file
 

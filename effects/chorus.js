@@ -5,8 +5,8 @@ import { el, createNode } from '@elemaudio/core';
 function ChorusComposite({props, context, children}) {
   let sr = context.sampleRate;
   let input = children[0];
-  let rate = Math.max(0, Math.min(20000, props.rate));
-  let depth = Math.max(10, Math.min(40, props.depth));
+  let rate = Math.max(0.001, Math.min(10, props.rate));
+  let depth = Math.max(10, Math.min(30, props.depth));
 
   const hasKey = props.hasOwnProperty('key') &&
     typeof props.key === 'string' &&
@@ -18,7 +18,7 @@ function ChorusComposite({props, context, children}) {
   }
 
   return el.delay(
-    {size: sr * 30 / 1000},
+    {size: sr * 100 / 1000},
     el.ms2samps(el.add(20, el.mul(depth, 0.5), el.mul(0.5, depth, el.triangle(rate)))),
     0,
     input,
