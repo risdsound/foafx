@@ -42,13 +42,13 @@ Options:
   -h, --help                         display help for command
 
 Commands:
-  bitcrush <inputFile> <outputPath>  Run the bitcrusher spatial audio effect over the input file
+  bitcrush <inputFile> <outputPath>     Run the bitcrusher spatial audio effect over the input file
   distortion <inputFile> <outputPath>   Run the distortion spatial audio effect over the input file
-  delay <inputFile> <outputPath>     Run the delay spatial audio effect over the input file
-  flanger <inputFile> <outputPath>    Run the flanger spatial audio effect over the input file
-  chorus <inputFile> <outputPath>    Run the chorus spatial audio effect over the input file
-  gain <inputFile> <outputPath>      Run the gain spatial audio effect over the input file
-  help [command]                     display help for command
+  delay <inputFile> <outputPath>        Run the delay spatial audio effect over the input file
+  flanger <inputFile> <outputPath>      Run the flanger spatial audio effect over the input file
+  chorus <inputFile> <outputPath>       Run the chorus spatial audio effect over the input file
+  gain <inputFile> <outputPath>         Run the gain spatial audio effect over the input file
+  help [command]                        display help for command
 ```
 
 ## Parameter ranges
